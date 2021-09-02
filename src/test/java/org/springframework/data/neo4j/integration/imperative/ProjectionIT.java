@@ -56,6 +56,7 @@ import org.springframework.data.neo4j.integration.shared.common.NamesOnlyDto;
 import org.springframework.data.neo4j.integration.shared.common.NamesWithSpELCity;
 import org.springframework.data.neo4j.integration.shared.common.Person;
 import org.springframework.data.neo4j.integration.shared.common.PersonSummary;
+import org.springframework.data.neo4j.integration.shared.common.PersonWithNoConstructor;
 import org.springframework.data.neo4j.integration.shared.common.ProjectionTest1O1;
 import org.springframework.data.neo4j.integration.shared.common.ProjectionTestLevel1;
 import org.springframework.data.neo4j.integration.shared.common.ProjectionTestRoot;
@@ -104,6 +105,7 @@ class ProjectionIT {
 
 			transaction.run("MATCH (n) detach delete n");
 			transaction.run("CREATE (p:PersonEntity {id: 'p1', email: 'p1@dep1.org'}) -[:MEMBER_OF]->(department:DepartmentEntity {id: 'd1', name: 'Dep1'}) RETURN p");
+			transaction.run("CREATE (p:PersonWithNoConstructor {name: 'meistermeier', first_name: 'Gerrit'}) RETURN p");
 
 			for (Map.Entry<String, String> person : new Map.Entry[] {
 					new AbstractMap.SimpleEntry(FIRST_NAME, LAST_NAME),
@@ -365,6 +367,34 @@ class ProjectionIT {
 				.satisfies(ProjectionIT::projectedEntities);
 	}
 
+	@Test // GH-2371
+	void findWithCustomPropertyNameWorks(@Autowired PersonWithNoConstructorRepository repository) {
+		assertThat(repository.findAll()).hasSize(1);
+		ProjectedPersonWithNoConstructor person = repository.findByName("meistermeier");
+		assertThat(person.getFirstName()).isEqualTo("Gerrit");
+	}
+
+	@Test // GH-2371
+	void saveWithCustomPropertyNameWorks(@Autowired Neo4jTemplate neo4jTemplate) {
+		PersonWithNoConstructor person = neo4jTemplate.findOne("MATCH (p:PersonWithNoConstructor {name: 'meistermeier'}) RETURN p", Collections.emptyMap(),
+				PersonWithNoConstructor.class).get();
+
+		person.setName("rotnroll666");
+		person.setFirstName("Michael");
+
+		neo4jTemplate.saveAs(person, ProjectedPersonWithNoConstructor.class);
+
+		try (Session session = driver.session(bookmarkCapture.createSessionConfig())) {
+			Record record = session
+					.run("MATCH (p:PersonWithNoConstructor {name: 'rotnroll666'}) RETURN p.name as name, p.first_name as first_name")
+					.single();
+
+			assertThat(record.get("first_name").asString()).isEqualTo("Michael");
+		}
+
+	}
+
+
 	private static void projectedEntities(PersonDepartmentQueryResult personAndDepartment) {
 		assertThat(personAndDepartment.getPerson()).extracting(PersonEntity::getId).isEqualTo("p1");
 		assertThat(personAndDepartment.getPerson()).extracting(PersonEntity::getEmail).isEqualTo("p1@dep1.org");
@@ -380,6 +410,15 @@ class ProjectionIT {
 						p.getRequiredSymbolicName()
 				)
 				.build();
+	}
+
+	interface ProjectedPersonWithNoConstructor {
+		String getName();
+		String getFirstName();
+	}
+
+	interface PersonWithNoConstructorRepository extends Neo4jRepository<PersonWithNoConstructor, Long> {
+		ProjectedPersonWithNoConstructor findByName(String name);
 	}
 
 	interface ProjectionPersonRepository extends Neo4jRepository<Person, Long>, CypherdslStatementExecutor<Person>  {
