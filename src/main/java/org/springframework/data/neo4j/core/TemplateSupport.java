@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -116,9 +117,9 @@ public final class TemplateSupport {
 	}
 
 	static PropertyFilter computeIncludePropertyPredicate(Collection<PropertyPath> includedProperties,
-														  NodeDescription<?> nodeDescription) {
+														  NodeDescription<?> nodeDescription, Function<PropertyPath, String> alternativeNamingFunction) {
 
-		return PropertyFilter.from(includedProperties, nodeDescription);
+		return PropertyFilter.from(includedProperties, nodeDescription, alternativeNamingFunction);
 	}
 
 	static void updateVersionPropertyIfPossible(

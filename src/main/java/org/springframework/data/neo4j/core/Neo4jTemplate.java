@@ -367,7 +367,9 @@ public final class Neo4jTemplate implements
 		Function<T, Map<String, Object>> binderFunction = neo4jMappingContext
 				.getRequiredBinderFunctionFor((Class<T>) entityToBeSaved.getClass());
 
-		PropertyFilter includeProperty = TemplateSupport.computeIncludePropertyPredicate(includedProperties, entityMetaData);
+		Function<PropertyPath, String> alternativeNamingFunction = (propertyPath) -> neo4jMappingContext.getPersistentPropertyPath(propertyPath.toDotPath(), instance.getClass()).getLeafProperty().getPropertyName();
+
+		PropertyFilter includeProperty = TemplateSupport.computeIncludePropertyPredicate(includedProperties, entityMetaData, alternativeNamingFunction);
 		binderFunction = binderFunction.andThen(tree -> {
 			@SuppressWarnings("unchecked")
 			Map<String, Object> properties = (Map<String, Object>) tree.get(Constants.NAME_OF_PROPERTIES_PARAM);
@@ -501,7 +503,8 @@ public final class Neo4jTemplate implements
 			Neo4jPersistentProperty idProperty = entityMetaData.getRequiredIdProperty();
 			Object id = convertIdValues(idProperty, propertyAccessor.getProperty(idProperty));
 			Long internalId = idToInternalIdMapping.get(id);
-			return this.<T>processRelations(entityMetaData, propertyAccessor, t.wasNew, new NestedRelationshipProcessingStateMachine(neo4jMappingContext, t.originalInstance, internalId), TemplateSupport.computeIncludePropertyPredicate(includedProperties, entityMetaData));
+			Function<PropertyPath, String> alternativeNamingFunction = (propertyPath) -> neo4jMappingContext.getPersistentPropertyPath(propertyPath.toDotPath(), entityMetaData.getUnderlyingClass()).getLeafProperty().getPropertyName();
+			return this.<T>processRelations(entityMetaData, propertyAccessor, t.wasNew, new NestedRelationshipProcessingStateMachine(neo4jMappingContext, t.originalInstance, internalId), TemplateSupport.computeIncludePropertyPredicate(includedProperties, entityMetaData, alternativeNamingFunction));
 		}).collect(Collectors.toList());
 	}
 

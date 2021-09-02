@@ -21,6 +21,8 @@ import org.springframework.data.mapping.PropertyPath;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringJoiner;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -29,8 +31,8 @@ import java.util.stream.Collectors;
 @API(status = API.Status.INTERNAL)
 public abstract class PropertyFilter {
 
-	public static PropertyFilter from(Collection<PropertyPath> properties, NodeDescription<?> nodeDescription) {
-		return new FilteringPropertyFilter(properties, nodeDescription);
+	public static PropertyFilter from(Collection<PropertyPath> properties, NodeDescription<?> nodeDescription, Function<PropertyPath, String> alternativeNamingFunction) {
+		return new FilteringPropertyFilter(properties, nodeDescription, alternativeNamingFunction);
 	}
 
 	public static PropertyFilter acceptAll() {
@@ -47,7 +49,7 @@ public abstract class PropertyFilter {
 		private final Set<Class<?>> rootClasses;
 		private final Set<String> projectingPropertyPaths;
 
-		private FilteringPropertyFilter(Collection<PropertyPath> properties, NodeDescription<?> nodeDescription) {
+		private FilteringPropertyFilter(Collection<PropertyPath> properties, NodeDescription<?> nodeDescription, Function<PropertyPath, String> alternativeNamingFunction) {
 			Class<?> domainClass = nodeDescription.getUnderlyingClass();
 
 			rootClasses = new HashSet<>();
@@ -62,6 +64,22 @@ public abstract class PropertyFilter {
 					.forEach(rootClasses::add);
 
 			projectingPropertyPaths = properties.stream().map(PropertyPath::toDotPath).collect(Collectors.toSet());
+
+			properties.stream().map(pp -> {
+				try {
+					String dings = alternativeNamingFunction.apply(pp);
+
+					String[] path = pp.toDotPath().split("\\.");
+					StringJoiner stringJoiner = new StringJoiner(".");
+					for (int i = 0; i < path.length - 1; i++) {
+						stringJoiner.add(path[i]);
+					}
+					stringJoiner.add(dings);
+					return stringJoiner.toString();
+				} catch (Exception e) {
+					return pp.toDotPath();
+				}
+			}).forEach(projectingPropertyPaths::add);
 		}
 
 		@Override

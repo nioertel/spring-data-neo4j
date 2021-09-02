@@ -391,9 +391,7 @@ class ProjectionIT {
 
 			assertThat(record.get("first_name").asString()).isEqualTo("Michael");
 		}
-
 	}
-
 
 	private static void projectedEntities(PersonDepartmentQueryResult personAndDepartment) {
 		assertThat(personAndDepartment.getPerson()).extracting(PersonEntity::getId).isEqualTo("p1");

@@ -304,7 +304,8 @@ final class CypherQueryCreator extends AbstractQueryCreator<QueryFragmentsAndPar
 		} else if (queryType == Neo4jQueryType.EXISTS) {
 			queryFragments.setReturnExpression(Functions.count(Constants.NAME_OF_TYPED_ROOT_NODE.apply(nodeDescription)).gt(Cypher.literalOf(0)), true);
 		} else {
-			queryFragments.setReturnBasedOn(nodeDescription, includedProperties, isDistinct);
+			Function<PropertyPath, String> alternativeNamingFunction = (propertyPath) -> mappingContext.getPersistentPropertyPath(propertyPath.toDotPath(), nodeDescription.getUnderlyingClass()).getLeafProperty().getPropertyName();
+			queryFragments.setReturnBasedOn(nodeDescription, includedProperties, isDistinct, alternativeNamingFunction);
 			queryFragments.setOrderBy(Stream
 					.concat(sortItems.stream(),
 							pagingParameter.getSort().and(sort).stream().map(CypherAdapterUtils.sortAdapterFor(nodeDescription)))

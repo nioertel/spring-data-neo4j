@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.apiguardian.api.API;
 import org.neo4j.cypherdsl.core.Condition;
@@ -103,8 +104,9 @@ public final class QueryFragments {
 	}
 
 	public void setReturnBasedOn(NodeDescription<?> nodeDescription, List<PropertyPath> includedProperties,
-			boolean isDistinct) {
-		this.returnTuple = new ReturnTuple(nodeDescription, includedProperties, isDistinct);
+			boolean isDistinct, Function<PropertyPath, String> alternativeNamingFunction) {
+
+		this.returnTuple = new ReturnTuple(nodeDescription, includedProperties, isDistinct, alternativeNamingFunction);
 	}
 
 	public boolean isScalarValueReturn() {
@@ -173,9 +175,9 @@ public final class QueryFragments {
 		final PropertyFilter filteredProperties;
 		final boolean isDistinct;
 
-		private ReturnTuple(NodeDescription<?> nodeDescription, List<PropertyPath> filteredProperties, boolean isDistinct) {
+		private ReturnTuple(NodeDescription<?> nodeDescription, List<PropertyPath> filteredProperties, boolean isDistinct, Function<PropertyPath, String> alternativeNamingFunction) {
 			this.nodeDescription = nodeDescription;
-			this.filteredProperties = PropertyFilter.from(filteredProperties, nodeDescription);
+			this.filteredProperties = PropertyFilter.from(filteredProperties, nodeDescription, alternativeNamingFunction);
 			this.isDistinct = isDistinct;
 		}
 	}
