@@ -95,11 +95,6 @@ public final class PropertyFilterSupport {
 		if (mappingContext.getConversionService().isSimpleType(propertyType)) {
 			filteredProperties.add(propertyPath);
 		} else if (mappingContext.hasPersistentEntityFor(propertyType)) {
-			// avoid recursion / cycles
-			if (propertyType.equals(domainType)) {
-				return;
-			}
-
 			addPropertiesFromEntity(filteredProperties, propertyPath, propertyType, mappingContext, new HashSet<>());
 		} else {
 			ProjectionInformation nestedProjectionInformation = factory.getProjectionInformation(propertyType);
@@ -173,10 +168,6 @@ public final class PropertyFilterSupport {
 										  Neo4jMappingContext mappingContext,
 										  Collection<Neo4jPersistentEntity<?>> processedEntities) {
 
-		// break the recursion / cycles
-		if (filteredProperties.contains(propertyPath)) {
-			return;
-		}
 		Class<?> propertyType = propertyPath.getLeafType();
 		// simple types can get added directly to the list.
 		if (mappingContext.getConversionService().isSimpleType(propertyType)) {

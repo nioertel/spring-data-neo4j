@@ -1070,7 +1070,7 @@ public final class Neo4jTemplate implements
 		private void iterateNextLevel(Collection<Long> nodeIds, Neo4jPersistentEntity<?> target, Set<Long> relationshipIds,
 									  Set<Long> relatedNodeIds) {
 
-			Collection<RelationshipDescription> relationships = target.getRelationshipsInHierarchy(preparedQuery.getQueryFragmentsAndParameters().getQueryFragments()::includeField);
+			Collection<RelationshipDescription> relationships = target.getRelationshipsInHierarchy(relaxedPropertyPath -> true);
 			for (RelationshipDescription relationshipDescription : relationships) {
 
 				Node node = anyNode(Constants.NAME_OF_TYPED_ROOT_NODE.apply(target));

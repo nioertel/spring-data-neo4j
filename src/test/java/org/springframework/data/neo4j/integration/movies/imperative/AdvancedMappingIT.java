@@ -15,10 +15,8 @@
  */
 package org.springframework.data.neo4j.integration.movies.imperative;
 
-import ch.qos.logback.classic.Level;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Session;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +37,6 @@ import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.data.neo4j.test.BookmarkCapture;
-import org.springframework.data.neo4j.test.LogbackCapture;
-import org.springframework.data.neo4j.test.LogbackCapturingExtension;
 import org.springframework.data.neo4j.test.Neo4jExtension;
 import org.springframework.data.neo4j.test.Neo4jIntegrationTest;
 import org.springframework.data.repository.query.Param;
@@ -63,7 +59,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Michael J. Simons
  * @soundtrack Body Count - Manslaughter
  */
-@ExtendWith(LogbackCapturingExtension.class)
 @Neo4jIntegrationTest
 class AdvancedMappingIT {
 
@@ -217,30 +212,24 @@ class AdvancedMappingIT {
 						"Carrie-Anne Moss", "Hugo Weaving");
 	}
 
-	@Test // GH-2117
-	void cyclicRelationshipsAreExcludedFromProjectionsWithProjections(
-			@Autowired MovieRepository movieRepository, LogbackCapture logbackCapture) {
+	@Test // GH-2117 updated for GH-2320
+	void cyclicRelationshipsShouldHydrateCorrectlyProjectionsWithProjections(
+			@Autowired MovieRepository movieRepository) {
 
-		logbackCapture.addLogger("org.springframework.data.neo4j.cypher", Level.DEBUG);
+		// The movie domain is a good fit for this test
+		// as the cyclic dependencies is pretty slow to retrieve from Neo4j
+		// this does OOM in most setups.
+		MovieProjectionWithActorProjection projection = movieRepository
+				.findProjectionWithProjectionByTitle("The Matrix");
+		assertThat(projection.getTitle()).isNotNull();
+		assertThat(projection.getActors()).extracting("person").extracting("name")
+				.containsExactlyInAnyOrder("Gloria Foster", "Keanu Reeves", "Emil Eifrem", "Laurence Fishburne",
+						"Carrie-Anne Moss", "Hugo Weaving");
+		assertThat(projection.getActors()).flatExtracting("roles")
+				.containsExactlyInAnyOrder("The Oracle", "Morpheus", "Trinity", "Agent Smith", "Emil", "Neo");
 
-		try {
-			// The movie domain is a good fit for this test
-			// as the cyclic dependencies is pretty slow to retrieve from Neo4j
-			// this does OOM in most setups.
-			MovieProjectionWithActorProjection projection = movieRepository
-					.findProjectionWithProjectionByTitle("The Matrix");
-			assertThat(projection.getTitle()).isNotNull();
-			assertThat(projection.getActors()).extracting("person").extracting("name")
-					.containsExactlyInAnyOrder("Gloria Foster", "Keanu Reeves", "Emil Eifrem", "Laurence Fishburne",
-							"Carrie-Anne Moss", "Hugo Weaving");
-			assertThat(projection.getActors()).flatExtracting("roles")
-					.containsExactlyInAnyOrder("The Oracle", "Morpheus", "Trinity", "Agent Smith", "Emil", "Neo");
+		assertThat(projection.getActors()).extracting("person").allMatch(person -> !((MovieProjectionWithActorProjection.ActorProjection.PersonProjection) person).getActedIn().isEmpty());
 
-			assertThat(logbackCapture.getFormattedMessages()).anyMatch(message ->
-					message.contains("MATCH (movie:`Movie`) WHERE movie.title = $title RETURN movie{.title"));
-		} finally {
-			logbackCapture.resetLogLevel();
-		}
 	}
 
 	@Test // GH-2114
