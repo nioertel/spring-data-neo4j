@@ -104,6 +104,11 @@ public final class PropertyFilterSupport {
 				for (PropertyDescriptor nestedInputProperty : nestedProjectionInformation.getInputProperties()) {
 					PropertyPath nestedPropertyPath = propertyPath.nested(nestedInputProperty.getName());
 					filteredProperties.add(nestedPropertyPath);
+					if (propertyPath.hasNext() && (domainType.equals(propertyPath.getLeafProperty().getOwningType().getType())
+					|| returnedType.equals(propertyPath.getLeafProperty().getOwningType().getType()))) {
+						break;
+					}
+
 					addPropertiesFrom(domainType, returnedType, factory, filteredProperties,
 							nestedPropertyPath.toDotPath(), mappingContext);
 				}

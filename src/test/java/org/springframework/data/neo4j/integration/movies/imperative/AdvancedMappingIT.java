@@ -121,6 +121,10 @@ class AdvancedMappingIT {
 		}
 	}
 
+	interface MovieWithSequel {
+		MovieWithSequel getSequel();
+	}
+
 	interface MovieRepository extends Neo4jRepository<Movie, String> {
 
 		MovieProjection findProjectionByTitle(String title);
@@ -134,6 +138,8 @@ class AdvancedMappingIT {
 
 		@Query("MATCH p=(movie:Movie)<-[r:ACTED_IN]-(n:Person) WHERE movie.title=$title RETURN collect(p)")
 		List<Movie> customPathQueryMoviesFind(@Param("title") String title);
+
+		MovieWithSequel findProjectionByTitleAndDescription(String title, String description);
 	}
 
 	@Test // GH-1906
@@ -411,6 +417,11 @@ class AdvancedMappingIT {
 
 		assertThat(movies).hasSize(1);
 		assertThat(movies.get(0).getActors()).hasSize(5);
+	}
+
+	@Test // GH-2320
+	void projectDirectCycleReference(@Autowired MovieRepository movieRepository) {
+		movieRepository.findProjectionByTitleAndDescription("The Matrix Revolutions", "Everything that has a beginning has an end");
 	}
 
 	@Configuration
