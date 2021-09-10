@@ -122,6 +122,7 @@ class AdvancedMappingIT {
 	}
 
 	interface MovieWithSequel {
+		String getTitle();
 		MovieWithSequel getSequel();
 	}
 
@@ -234,8 +235,9 @@ class AdvancedMappingIT {
 		assertThat(projection.getActors()).flatExtracting("roles")
 				.containsExactlyInAnyOrder("The Oracle", "Morpheus", "Trinity", "Agent Smith", "Emil", "Neo");
 
-		assertThat(projection.getActors()).extracting("person").allMatch(person -> !((MovieProjectionWithActorProjection.ActorProjection.PersonProjection) person).getActedIn().isEmpty());
-
+		assertThat(projection.getActors()).extracting("person")
+				.allMatch(person ->
+					!((MovieProjectionWithActorProjection.ActorProjection.PersonProjection) person).getActedIn().isEmpty());
 	}
 
 	@Test // GH-2114
@@ -421,7 +423,11 @@ class AdvancedMappingIT {
 
 	@Test // GH-2320
 	void projectDirectCycleReference(@Autowired MovieRepository movieRepository) {
-		movieRepository.findProjectionByTitleAndDescription("The Matrix Revolutions", "Everything that has a beginning has an end");
+		MovieWithSequel movie = movieRepository.findProjectionByTitleAndDescription("The Matrix",
+				"Welcome to the Real World");
+
+		assertThat(movie.getSequel().getTitle()).isEqualTo("The Matrix Reloaded");
+		assertThat(movie.getSequel().getSequel().getTitle()).isEqualTo("The Matrix Revolutions");
 	}
 
 	@Configuration
