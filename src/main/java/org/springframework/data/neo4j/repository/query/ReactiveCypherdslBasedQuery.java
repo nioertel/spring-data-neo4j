@@ -51,7 +51,7 @@ final class ReactiveCypherdslBasedQuery extends AbstractReactiveNeo4jQuery {
 	}
 
 	@Override
-	protected <T> PreparedQuery<T> prepareQuery(Class<T> returnedType, List<PropertyPath> includedProperties,
+	protected <T> PreparedQuery<T> prepareQuery(Class<T> returnedType, Map<PropertyPath, Boolean> includedProperties,
 			Neo4jParameterAccessor parameterAccessor, Neo4jQueryType queryType,
 			BiFunction<TypeSystem, MapAccessor, ?> mappingFunction) {
 

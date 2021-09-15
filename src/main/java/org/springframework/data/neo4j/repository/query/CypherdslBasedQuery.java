@@ -56,7 +56,7 @@ final class CypherdslBasedQuery extends AbstractNeo4jQuery {
 
 	@Override
 	protected <T> PreparedQuery<T> prepareQuery(Class<T> returnedType,
-			List<PropertyPath> includedProperties,
+			Map<PropertyPath, Boolean> includedProperties,
 			Neo4jParameterAccessor parameterAccessor, Neo4jQueryType queryType,
 			BiFunction<TypeSystem, MapAccessor, ?> mappingFunction,
 			UnaryOperator<Integer> limitModifier) {

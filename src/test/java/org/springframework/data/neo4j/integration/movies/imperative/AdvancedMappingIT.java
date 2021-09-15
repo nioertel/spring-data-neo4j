@@ -121,9 +121,14 @@ class AdvancedMappingIT {
 		}
 	}
 
-	interface MovieWithSequel {
+	interface MovieWithSequelProjection {
 		String getTitle();
-		MovieWithSequel getSequel();
+		MovieWithSequelProjection getSequel();
+	}
+
+	interface MovieWithSequelEntity {
+		String getTitle();
+		Movie getSequel();
 	}
 
 	interface MovieRepository extends Neo4jRepository<Movie, String> {
@@ -140,7 +145,9 @@ class AdvancedMappingIT {
 		@Query("MATCH p=(movie:Movie)<-[r:ACTED_IN]-(n:Person) WHERE movie.title=$title RETURN collect(p)")
 		List<Movie> customPathQueryMoviesFind(@Param("title") String title);
 
-		MovieWithSequel findProjectionByTitleAndDescription(String title, String description);
+		MovieWithSequelProjection findProjectionByTitleAndDescription(String title, String description);
+
+		MovieWithSequelEntity findByTitleAndDescription(String title, String description);
 	}
 
 	@Test // GH-1906
@@ -422,12 +429,26 @@ class AdvancedMappingIT {
 	}
 
 	@Test // GH-2320
-	void projectDirectCycleReference(@Autowired MovieRepository movieRepository) {
-		MovieWithSequel movie = movieRepository.findProjectionByTitleAndDescription("The Matrix",
+	void projectDirectCycleProjectionReference(@Autowired MovieRepository movieRepository) {
+		MovieWithSequelProjection movie = movieRepository.findProjectionByTitleAndDescription("The Matrix",
 				"Welcome to the Real World");
 
 		assertThat(movie.getSequel().getTitle()).isEqualTo("The Matrix Reloaded");
 		assertThat(movie.getSequel().getSequel().getTitle()).isEqualTo("The Matrix Revolutions");
+	}
+
+	@Test // GH-2320
+	void projectDirectCycleEntityReference(@Autowired MovieRepository movieRepository) {
+		MovieWithSequelEntity movie = movieRepository.findByTitleAndDescription("The Matrix",
+				"Welcome to the Real World");
+
+		Movie firstSequel = movie.getSequel();
+		assertThat(firstSequel.getTitle()).isEqualTo("The Matrix Reloaded");
+		assertThat(firstSequel.getActors()).isNotEmpty();
+
+		Movie secondSequel = firstSequel.getSequel();
+		assertThat(secondSequel.getTitle()).isEqualTo("The Matrix Revolutions");
+		assertThat(secondSequel.getActors()).isNotEmpty();
 	}
 
 	@Configuration
