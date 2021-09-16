@@ -676,7 +676,7 @@ public final class ReactiveNeo4jTemplate implements
 									})
 									.one()
 									.map(TupleOfLongsHolder::get)
-									.expand(iterateAndMapNextLevel(relationshipDescription, queryFragments, rootClass));
+									.expand(iterateAndMapNextLevel(relationshipDescription, queryFragments, rootClass, ""));
 						})
 						.then(Mono.fromSupplier(() -> new NodesAndRelationshipsByIdStatementProvider(rootNodeIds, processedRelationshipIds, processedNodeIds, queryFragments)));
 			})
@@ -704,7 +704,7 @@ public final class ReactiveNeo4jTemplate implements
 	}
 
 	private Flux<Tuple2<Collection<Long>, Collection<Long>>> iterateNextLevel(Collection<Long> relatedNodeIds,
-																			  RelationshipDescription sourceRelationshipDescription, QueryFragments queryFragments, Class<?> rootClass) {
+																			  RelationshipDescription sourceRelationshipDescription, QueryFragments queryFragments, Class<?> rootClass, String existingPathName) {
 
 		NodeDescription<?> target = sourceRelationshipDescription.getTarget();
 
@@ -714,12 +714,12 @@ public final class ReactiveNeo4jTemplate implements
 							@SuppressWarnings("unchecked")
 							String fieldName = ((Association<Neo4jPersistentProperty>) sourceRelationshipDescription).getInverse().getFieldName();
 
-							@SuppressWarnings("ConstantConditions")
-							String newFieldName = sourceRelationshipDescription.hasRelationshipProperties() ?
+							String ding = existingPathName + (sourceRelationshipDescription.hasRelationshipProperties() ?
 									fieldName + "." + ((Neo4jPersistentEntity<?>) sourceRelationshipDescription.getRelationshipPropertiesEntity())
-											.getPersistentProperty(TargetNode.class).getFieldName() : fieldName;
+											.getPersistentProperty(TargetNode.class).getFieldName() : fieldName);
 
-							PropertyFilter.RelaxedPropertyPath prepend = relaxedPropertyPath.prepend(newFieldName);
+
+							PropertyFilter.RelaxedPropertyPath prepend = relaxedPropertyPath.prepend(ding);
 							prepend = PropertyFilter.RelaxedPropertyPath.withRootType(rootClass).append(prepend.toDotPath());
 							return queryFragments.includeField(prepend);
 						}
@@ -743,7 +743,15 @@ public final class ReactiveNeo4jTemplate implements
 						})
 						.one()
 						.map(TupleOfLongsHolder::get)
-						.expand(object -> iterateAndMapNextLevel(relDe, queryFragments, rootClass).apply(object));
+						.expand(object -> {
+							@SuppressWarnings("unchecked")
+							String fieldName = ((Association<Neo4jPersistentProperty>) sourceRelationshipDescription).getInverse().getFieldName();
+
+							String ding = existingPathName + (sourceRelationshipDescription.hasRelationshipProperties() ?
+									fieldName + "." + ((Neo4jPersistentEntity<?>) sourceRelationshipDescription.getRelationshipPropertiesEntity())
+											.getPersistentProperty(TargetNode.class).getFieldName() : fieldName);
+							return iterateAndMapNextLevel(relDe, queryFragments, rootClass, ding + ".").apply(object);
+						});
 			});
 
 	}
@@ -751,7 +759,7 @@ public final class ReactiveNeo4jTemplate implements
 	@NonNull
 	private Function<Tuple2<Collection<Long>, Collection<Long>>,
 			Publisher<Tuple2<Collection<Long>, Collection<Long>>>> iterateAndMapNextLevel(
-			RelationshipDescription relationshipDescription, QueryFragments queryFragments, Class<?> rootClass) {
+			RelationshipDescription relationshipDescription, QueryFragments queryFragments, Class<?> rootClass, String existingPathName) {
 
 		return newRelationshipAndRelatedNodeIds ->
 			Flux.deferContextual(ctx -> {
@@ -774,7 +782,7 @@ public final class ReactiveNeo4jTemplate implements
 					return Mono.empty();
 				}
 
-				return iterateNextLevel(newRelatedNodeIds, relationshipDescription, queryFragments, rootClass);
+				return iterateNextLevel(newRelatedNodeIds, relationshipDescription, queryFragments, rootClass, existingPathName);
 			});
 	}
 

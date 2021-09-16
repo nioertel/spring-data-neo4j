@@ -1063,29 +1063,31 @@ public final class Neo4jTemplate implements
 						.bindAll(parameters)
 						.fetch()
 						.one()
-						.ifPresent(iterateAndMapNextLevel(relationshipIds, relatedNodeIds, relationshipDescription));
+						.ifPresent(iterateAndMapNextLevel(relationshipIds, relatedNodeIds, relationshipDescription, ""));
 			}
 
 			return new NodesAndRelationshipsByIdStatementProvider(rootNodeIds, relationshipIds, relatedNodeIds, queryFragments);
 		}
 
 		private void iterateNextLevel(Collection<Long> nodeIds, RelationshipDescription sourceRelationshipDescription, Set<Long> relationshipIds,
-									  Set<Long> relatedNodeIds) {
+									  Set<Long> relatedNodeIds, String existingNamePath) {
 
 			Neo4jPersistentEntity<?> target = (Neo4jPersistentEntity<?>) sourceRelationshipDescription.getTarget();
+
+			@SuppressWarnings("unchecked")
+			String fieldName = ((Association<Neo4jPersistentProperty>) sourceRelationshipDescription).getInverse().getFieldName();
+
+			existingNamePath = existingNamePath + (sourceRelationshipDescription.hasRelationshipProperties() ?
+					fieldName + "." + ((Neo4jPersistentEntity<?>) sourceRelationshipDescription.getRelationshipPropertiesEntity())
+							.getPersistentProperty(TargetNode.class).getFieldName() : fieldName);
+
+			String ding = existingNamePath;
 
 			Collection<RelationshipDescription> relationships = target
 					.getRelationshipsInHierarchy(
 							relaxedPropertyPath -> {
-								@SuppressWarnings("unchecked")
-								String fieldName = ((Association<Neo4jPersistentProperty>) sourceRelationshipDescription).getInverse().getFieldName();
 
-								@SuppressWarnings("ConstantConditions")
-								String newFieldName = sourceRelationshipDescription.hasRelationshipProperties() ?
-										fieldName + "." + ((Neo4jPersistentEntity<?>) sourceRelationshipDescription.getRelationshipPropertiesEntity())
-												.getPersistentProperty(TargetNode.class).getFieldName() : fieldName;
-
-								PropertyFilter.RelaxedPropertyPath prepend = relaxedPropertyPath.prepend(newFieldName);
+								PropertyFilter.RelaxedPropertyPath prepend = relaxedPropertyPath.prepend(ding);
 								prepend = PropertyFilter.RelaxedPropertyPath.withRootType(preparedQuery.getResultType()).append(prepend.toDotPath());
 								return preparedQuery.getQueryFragmentsAndParameters().getQueryFragments().includeField(prepend);
 							}
@@ -1104,14 +1106,15 @@ public final class Neo4jTemplate implements
 						.bindAll(Collections.singletonMap(Constants.NAME_OF_IDS, nodeIds))
 						.fetch()
 						.one()
-						.ifPresent(iterateAndMapNextLevel(relationshipIds, relatedNodeIds, relationshipDescription));
+						.ifPresent(iterateAndMapNextLevel(relationshipIds, relatedNodeIds, relationshipDescription, existingNamePath + "."));
 			}
 		}
 
 		@NonNull
 		private Consumer<Map<String, Object>> iterateAndMapNextLevel(Set<Long> relationshipIds,
 																	 Set<Long> relatedNodeIds,
-																	 RelationshipDescription relationshipDescription) {
+																	 RelationshipDescription relationshipDescription,
+																	 String existingNamePath) {
 
 			return record -> {
 				@SuppressWarnings("unchecked")
@@ -1128,7 +1131,7 @@ public final class Neo4jTemplate implements
 				relatedNodeIds.addAll(relatedIds);
 				// 2. for the rest start the exploration
 				if (!relatedIds.isEmpty()) {
-					iterateNextLevel(relatedIds, relationshipDescription, relationshipIds, relatedNodeIds);
+					iterateNextLevel(relatedIds, relationshipDescription, relationshipIds, relatedNodeIds, existingNamePath);
 				}
 			};
 		}

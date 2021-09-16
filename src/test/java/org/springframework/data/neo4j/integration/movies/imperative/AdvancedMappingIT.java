@@ -45,6 +45,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -242,9 +243,14 @@ class AdvancedMappingIT {
 		assertThat(projection.getActors()).flatExtracting("roles")
 				.containsExactlyInAnyOrder("The Oracle", "Morpheus", "Trinity", "Agent Smith", "Emil", "Neo");
 
+		// second level mapping of entity cycle
 		assertThat(projection.getActors()).extracting("person")
 				.allMatch(person ->
 					!((MovieProjectionWithActorProjection.ActorProjection.PersonProjection) person).getActedIn().isEmpty());
+
+		// n+1 level mapping of entity cycle
+		assertThat(projection.getActors()).extracting("person").flatExtracting("actedIn").extracting("directors")
+				.allMatch(directors -> !((Collection<?>) directors).isEmpty());
 	}
 
 	@Test // GH-2114
