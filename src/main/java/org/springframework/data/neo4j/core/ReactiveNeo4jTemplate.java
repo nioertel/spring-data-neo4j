@@ -19,6 +19,8 @@ import static org.neo4j.cypherdsl.core.Cypher.anyNode;
 import static org.neo4j.cypherdsl.core.Cypher.asterisk;
 import static org.neo4j.cypherdsl.core.Cypher.parameter;
 
+import org.springframework.data.mapping.Association;
+import org.springframework.data.neo4j.core.schema.TargetNode;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -648,6 +650,8 @@ public final class ReactiveNeo4jTemplate implements
 		 	QueryFragments queryFragments, Map<String, Object> parameters) {
 
 			return Mono.deferContextual(ctx -> {
+				Class<?> rootClass = entityMetaData.getUnderlyingClass();
+
 				Set<Long> rootNodeIds = ctx.get("rootNodes");
 				Set<Long> processedRelationshipIds = ctx.get("processedRelationships");
 				Set<Long> processedNodeIds = ctx.get("processedNodes");
@@ -672,7 +676,7 @@ public final class ReactiveNeo4jTemplate implements
 									})
 									.one()
 									.map(TupleOfLongsHolder::get)
-									.expand(iterateAndMapNextLevel(relationshipDescription, queryFragments));
+									.expand(iterateAndMapNextLevel(relationshipDescription, queryFragments, rootClass));
 						})
 						.then(Mono.fromSupplier(() -> new NodesAndRelationshipsByIdStatementProvider(rootNodeIds, processedRelationshipIds, processedNodeIds, queryFragments)));
 			})
@@ -700,11 +704,26 @@ public final class ReactiveNeo4jTemplate implements
 	}
 
 	private Flux<Tuple2<Collection<Long>, Collection<Long>>> iterateNextLevel(Collection<Long> relatedNodeIds,
-																			  RelationshipDescription relationshipDescription, QueryFragments queryFragments) {
+																			  RelationshipDescription sourceRelationshipDescription, QueryFragments queryFragments, Class<?> rootClass) {
 
-		NodeDescription<?> target = relationshipDescription.getTarget();
+		NodeDescription<?> target = sourceRelationshipDescription.getTarget();
 
-		return Flux.fromIterable(target.getRelationshipsInHierarchy(queryFragments::includeField))
+		return Flux.fromIterable(target
+				.getRelationshipsInHierarchy(
+						relaxedPropertyPath -> {
+							@SuppressWarnings("unchecked")
+							String fieldName = ((Association<Neo4jPersistentProperty>) sourceRelationshipDescription).getInverse().getFieldName();
+
+							@SuppressWarnings("ConstantConditions")
+							String newFieldName = sourceRelationshipDescription.hasRelationshipProperties() ?
+									fieldName + "." + ((Neo4jPersistentEntity<?>) sourceRelationshipDescription.getRelationshipPropertiesEntity())
+											.getPersistentProperty(TargetNode.class).getFieldName() : fieldName;
+
+							PropertyFilter.RelaxedPropertyPath prepend = relaxedPropertyPath.prepend(newFieldName);
+							prepend = PropertyFilter.RelaxedPropertyPath.withRootType(rootClass).append(prepend.toDotPath());
+							return queryFragments.includeField(prepend);
+						}
+				))
 			.flatMap(relDe -> {
 				Node node = anyNode(Constants.NAME_OF_TYPED_ROOT_NODE.apply(target));
 
@@ -724,7 +743,7 @@ public final class ReactiveNeo4jTemplate implements
 						})
 						.one()
 						.map(TupleOfLongsHolder::get)
-						.expand(object -> iterateAndMapNextLevel(relDe, queryFragments).apply(object));
+						.expand(object -> iterateAndMapNextLevel(relDe, queryFragments, rootClass).apply(object));
 			});
 
 	}
@@ -732,7 +751,7 @@ public final class ReactiveNeo4jTemplate implements
 	@NonNull
 	private Function<Tuple2<Collection<Long>, Collection<Long>>,
 			Publisher<Tuple2<Collection<Long>, Collection<Long>>>> iterateAndMapNextLevel(
-			RelationshipDescription relationshipDescription, QueryFragments queryFragments) {
+			RelationshipDescription relationshipDescription, QueryFragments queryFragments, Class<?> rootClass) {
 
 		return newRelationshipAndRelatedNodeIds ->
 			Flux.deferContextual(ctx -> {
@@ -755,7 +774,7 @@ public final class ReactiveNeo4jTemplate implements
 					return Mono.empty();
 				}
 
-				return iterateNextLevel(newRelatedNodeIds, relationshipDescription, queryFragments);
+				return iterateNextLevel(newRelatedNodeIds, relationshipDescription, queryFragments, rootClass);
 			});
 	}
 
