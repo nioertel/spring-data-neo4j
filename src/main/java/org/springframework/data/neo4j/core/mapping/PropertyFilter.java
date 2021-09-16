@@ -18,13 +18,11 @@ package org.springframework.data.neo4j.core.mapping;
 import org.apiguardian.api.API;
 import org.springframework.data.mapping.PropertyPath;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * Something that makes sense of propertyPaths by having an understanding of projection classes.

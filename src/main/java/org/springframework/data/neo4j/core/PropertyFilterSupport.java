@@ -26,12 +26,10 @@ import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
 
 import java.beans.PropertyDescriptor;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -105,7 +103,6 @@ public final class PropertyFilterSupport {
 				filteredProperties.put(propertyPath, false);
 				for (PropertyDescriptor nestedInputProperty : nestedProjectionInformation.getInputProperties()) {
 					PropertyPath nestedPropertyPath = propertyPath.nested(nestedInputProperty.getName());
-//					filteredProperties.put(nestedPropertyPath, );
 					if (propertyPath.hasNext() && (domainType.equals(propertyPath.getLeafProperty().getOwningType().getType())
 					|| returnedType.equals(propertyPath.getLeafProperty().getOwningType().getType()))) {
 						break;
@@ -150,49 +147,11 @@ public final class PropertyFilterSupport {
 
 		filteredProperties.put(propertyPath, true);
 
-		if (1==1) {
-			return;
-		}
-		processedEntities.add(persistentEntityFromProperty);
-
-		// save base/root entity/projection type to avoid recursion later
-		Class<?> pathRootType = propertyPath.getOwningType().getType();
-		if (mappingContext.hasPersistentEntityFor(pathRootType)) {
-			processedEntities.add(mappingContext.getPersistentEntity(pathRootType));
-		}
-
-//		takeAllPropertiesFromEntity(filteredProperties, propertyPath, mappingContext, persistentEntityFromProperty, processedEntities);
 	}
 
 	private static boolean hasProcessedEntity(Neo4jPersistentEntity<?> persistentEntityFromProperty,
 											  Collection<Neo4jPersistentEntity<?>> processedEntities) {
 
 		return processedEntities.contains(persistentEntityFromProperty);
-	}
-
-	private static void takeAllPropertiesFromEntity(Collection<PropertyPath> filteredProperties,
-													PropertyPath propertyPath, Neo4jMappingContext mappingContext,
-													Neo4jPersistentEntity<?> persistentEntityFromProperty,
-													Collection<Neo4jPersistentEntity<?>> processedEntities) {
-
-		filteredProperties.add(propertyPath);
-
-		persistentEntityFromProperty.doWithAll(neo4jPersistentProperty -> {
-			addPropertiesFromEntity(filteredProperties, propertyPath.nested(neo4jPersistentProperty.getFieldName()), mappingContext, processedEntities);
-		});
-	}
-
-	private static void addPropertiesFromEntity(Collection<PropertyPath> filteredProperties, PropertyPath propertyPath,
-										  Neo4jMappingContext mappingContext,
-										  Collection<Neo4jPersistentEntity<?>> processedEntities) {
-
-		Class<?> propertyType = propertyPath.getLeafType();
-		// simple types can get added directly to the list.
-		if (mappingContext.getConversionService().isSimpleType(propertyType)) {
-			filteredProperties.add(propertyPath);
-		// Other types are handled also as entities because there cannot be any nested projection within a real entity.
-		} else if (mappingContext.hasPersistentEntityFor(propertyType)) {
-//			addPropertiesFromEntity(filteredProperties, propertyPath, propertyType, mappingContext, processedEntities);
-		}
 	}
 }
