@@ -30,7 +30,7 @@ import org.neo4j.ogm.annotation.Relationship;
 public class TempMovie extends AbstractEntity {
 
 	private String name;
-	@Relationship(type = "RATED", direction = Relationship.INCOMING) private Set<Rating> ratings = new HashSet<>();
+	@Relationship(type = "RATED", direction = Relationship.Direction.INCOMING) private Set<Rating> ratings = new HashSet<>();
 
 	public TempMovie() {}
 

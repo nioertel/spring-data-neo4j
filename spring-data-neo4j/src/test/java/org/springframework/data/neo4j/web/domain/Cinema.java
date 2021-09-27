@@ -40,7 +40,7 @@ public class Cinema {
 
 	private String name;
 
-	@Relationship(direction = Relationship.INCOMING) private Set<User> visited;
+	@Relationship(direction = Relationship.Direction.INCOMING) private Set<User> visited;
 
 	public Cinema() {}
 

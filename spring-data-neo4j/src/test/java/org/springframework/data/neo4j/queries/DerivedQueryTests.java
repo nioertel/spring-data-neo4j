@@ -700,7 +700,7 @@ public class DerivedQueryTests {
 	@Test // GH-1792
 	public void findByIdInNestedPropertyTraversalShouldWork() {
 		executeUpdate("CREATE (r:Theatre {name:'Ritzy', city:'London', capacity: 7500})"
-					  + " CREATE (u:User {name:'Michal'}) CREATE (u)-[:VISITED]->(r) CREATE (m1:Movie {name:'Speed'})"
+					  + " CREATE (u:User:Person {name:'Michal'}) CREATE (u)-[:VISITED]->(r) CREATE (m1:Movie {name:'Speed'})"
 					  + " CREATE (g:Genre {name:'Thriller'}) CREATE (u)-[:INTERESTED]->(g)");
 
 		long genreId = session.queryForObject(Long.class, "MATCH (g:Genre {name:'Thriller'}) RETURN id(g)",

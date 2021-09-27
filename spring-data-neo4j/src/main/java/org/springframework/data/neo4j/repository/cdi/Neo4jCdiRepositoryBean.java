@@ -62,6 +62,6 @@ public class Neo4jCdiRepositoryBean<T> extends CdiRepositoryBean<T> {
 
 		Session session = getDependencyInstance(sessionBean, Session.class);
 
-		return create(() -> new Neo4jRepositoryFactory(session), repositoryType);
+		return create(() -> new Neo4jRepositoryFactory(session, null), repositoryType);
 	}
 }

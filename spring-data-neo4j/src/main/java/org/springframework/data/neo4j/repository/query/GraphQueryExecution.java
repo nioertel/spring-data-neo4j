@@ -31,6 +31,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.neo4j.annotation.QueryResult;
 import org.springframework.data.neo4j.util.PagingAndSortingUtils;
 import org.springframework.data.support.PageableExecutionUtils;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -60,9 +61,13 @@ public interface GraphQueryExecution {
 			if (query.isFilterQuery()) {
 				result = session.loadAll(type, query.getFilters(), accessor.getDepth());
 			} else {
-				// not using queryForObject here because it raises too generic RuntimeException
-				// if more than one result found
-				if (type.getAnnotation(QueryResult.class) != null) {
+				boolean isNullOrVoid = type == null || ReflectionUtils.isVoid(type);
+
+				if(isNullOrVoid) {
+					result = session.query(query.getCypherQuery(), query.getParameters(), false).queryResults();
+				} else if (type.getAnnotation(QueryResult.class) != null) {
+					// not using queryForObject here because it raises too generic RuntimeException
+					// if more than one result found
 					result = session.query(query.getCypherQuery(), query.getParameters()).queryResults();
 				} else {
 					result = session.query(type, query.getCypherQuery(), query.getParameters());

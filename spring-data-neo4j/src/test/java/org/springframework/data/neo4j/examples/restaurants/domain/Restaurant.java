@@ -42,10 +42,10 @@ public class Restaurant implements Comparable<Restaurant> {
 	private boolean halal;
 
 	@Relationship(type = "REGULAR_DINER",
-			direction = Relationship.OUTGOING) private List<Diner> regularDiners = new ArrayList<>();
+			direction = Relationship.Direction.OUTGOING) private List<Diner> regularDiners = new ArrayList<>();
 
 	@Relationship(type = "SIMILAR_RESTAURANT",
-			direction = Relationship.OUTGOING) private List<Restaurant> similarRestaurants = new ArrayList<>();
+			direction = Relationship.Direction.OUTGOING) private List<Restaurant> similarRestaurants = new ArrayList<>();
 
 	@DateString private Date launchDate;
 

@@ -817,7 +817,7 @@ public class QueryIntegrationTests {
 	@Test // DATAGRAPH-1249
 	public void shouldFlushSessionAfterBulkUpdateReturningNodes() {
 
-		executeUpdate("CREATE (:User {name:'Schneider'}), (:User {name:'Hundingsbane'})");
+		executeUpdate("CREATE (:User:Person {name:'Schneider'}), (:User:Person {name:'Hundingsbane'})");
 		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 			@Override
 			public void doInTransactionWithoutResult(TransactionStatus status) {
@@ -833,7 +833,7 @@ public class QueryIntegrationTests {
 	@Test // DATAGRAPH-1249
 	public void shouldFlushSessionAfterBulkUpdateWithoutNodes() {
 
-		executeUpdate("CREATE (:User {name:'Schneider'}), (:User {name:'Hundingsbane'})");
+		executeUpdate("CREATE (:User:Person {name:'Schneider'}), (:User:Person {name:'Hundingsbane'})");
 		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 			@Override
 			public void doInTransactionWithoutResult(TransactionStatus status) {

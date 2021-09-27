@@ -46,7 +46,7 @@ import org.springframework.data.repository.cdi.CdiRepositoryExtensionSupport;
 public class Neo4jCdiRepositoryExtension extends CdiRepositoryExtensionSupport {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Neo4jCdiRepositoryExtension.class);
-	private final Map<Set<Annotation>, Bean<Session>> sessions = new HashMap<Set<Annotation>, Bean<Session>>();
+	private final Map<Set<Annotation>, Bean<Session>> sessions = new HashMap<>();
 
 	public Neo4jCdiRepositoryExtension() {
 		LOG.info("Activating CDI extension for Spring Data Neo4j repositories.");
@@ -63,7 +63,7 @@ public class Neo4jCdiRepositoryExtension extends CdiRepositoryExtensionSupport {
 					LOG.debug(String.format("Discovered %s with qualifiers %s.", Session.class.getName(), bean.getQualifiers()));
 				}
 
-				sessions.put(new HashSet<Annotation>(bean.getQualifiers()), (Bean<Session>) bean);
+				sessions.put(new HashSet<>(bean.getQualifiers()), (Bean<Session>) bean);
 			}
 		}
 	}
@@ -104,7 +104,7 @@ public class Neo4jCdiRepositoryExtension extends CdiRepositoryExtensionSupport {
 					String.format("Unable to resolve a bean for '%s' with qualifiers %s.", Session.class.getName(), qualifiers));
 		}
 
-		return new Neo4jCdiRepositoryBean<T>(sessionBean, qualifiers, repositoryType, beanManager,
+		return new Neo4jCdiRepositoryBean<>(sessionBean, qualifiers, repositoryType, beanManager,
 				Optional.of(getCustomImplementationDetector()));
 	}
 }

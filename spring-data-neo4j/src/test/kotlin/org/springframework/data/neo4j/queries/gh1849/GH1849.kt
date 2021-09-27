@@ -26,7 +26,7 @@ class Kennel {
 	@GeneratedValue
 	var id: Long? = null
 
-	@Relationship(type = "HOUSES", direction = Relationship.OUTGOING)
+	@Relationship(type = "HOUSES", direction = Relationship.Direction.OUTGOING)
 	lateinit var pet: Pet
 }
 
@@ -49,12 +49,12 @@ abstract class Pet(var name: String) {
 }
 
 class Dog(name: String, val breed: String) : Pet(name) {
-	@Relationship(type = "OWNED_BY", direction = Relationship.OUTGOING)
+	@Relationship(type = "OWNED_BY", direction = Relationship.Direction.OUTGOING)
 	override var person: Person? = null
 }
 
 class Cat(name: String, val food: String) : Pet(name) {
-	@Relationship(type = "LIVES_WITH", direction = Relationship.OUTGOING)
+	@Relationship(type = "LIVES_WITH", direction = Relationship.Direction.OUTGOING)
 	override var person: Person? = null
 }
 
@@ -62,5 +62,5 @@ class Cat(name: String, val food: String) : Pet(name) {
 interface KennelRepository : Neo4jRepository<Kennel, Long> {
 
 	@Transactional
-	override fun findAll(depth: Int): MutableIterable<Kennel>;
+	override fun findAll(depth: Int): MutableIterable<Kennel>
 }

@@ -47,7 +47,7 @@ public class World {
 	}
 
 	@Relationship(type = REACHABLE_BY_ROCKET,
-			direction = "UNDIRECTED") private Set<World> reachableByRocket = new HashSet<>();
+			direction = Relationship.Direction.UNDIRECTED) private Set<World> reachableByRocket = new HashSet<>();
 
 	public World(String name, int moons) {
 		this.name = name;

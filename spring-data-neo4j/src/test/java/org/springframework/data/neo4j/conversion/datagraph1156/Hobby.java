@@ -38,7 +38,7 @@ public class Hobby {
 	@Property("name")
 	private String name;
 
-	@Relationship(value = "HAS", direction = Relationship.INCOMING)
+	@Relationship(value = "HAS", direction = Relationship.Direction.INCOMING)
 	private User hobbyist;
 
 	public Hobby(String name, User hobbyist) {

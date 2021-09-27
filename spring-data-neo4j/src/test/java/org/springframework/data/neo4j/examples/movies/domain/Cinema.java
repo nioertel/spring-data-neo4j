@@ -35,9 +35,9 @@ public class Cinema {
 
 	@Property(name = "city") private String location;
 
-	@Relationship(type = "VISITED", direction = Relationship.INCOMING) private Set<User> visited = new HashSet<>();
+	@Relationship(type = "VISITED", direction = Relationship.Direction.INCOMING) private Set<User> visited = new HashSet<>();
 
-	@Relationship(type = "BLOCKBUSTER", direction = Relationship.OUTGOING) private TempMovie blockbusterOfTheWeek;
+	@Relationship(type = "BLOCKBUSTER", direction = Relationship.Direction.OUTGOING) private TempMovie blockbusterOfTheWeek;
 
 	private int capacity;
 

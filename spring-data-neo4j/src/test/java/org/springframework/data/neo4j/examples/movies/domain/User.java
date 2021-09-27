@@ -36,7 +36,7 @@ public class User extends Person {
 	private Collection<Genre> interested = new HashSet<>();
 
 	@Relationship(type = "FRIEND_OF",
-			direction = Relationship.UNDIRECTED) private Collection<User> friends = new HashSet<>();
+			direction = Relationship.Direction.UNDIRECTED) private Collection<User> friends = new HashSet<>();
 
 	@Relationship(type = "RATED") private Set<Rating> ratings = new HashSet<>();
 

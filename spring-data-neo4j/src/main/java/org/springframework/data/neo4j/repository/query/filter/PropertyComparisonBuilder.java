@@ -63,7 +63,7 @@ class PropertyComparisonBuilder extends FilterBuilder {
 		String propertyName = nestedAttributes.isEmpty() ? propertyName() : nestedAttributes.getLeafPropertySegment();
 		if (isInternalIdProperty.test(part)) {
 			filter = new Filter(new NativeIdFilterFunction(convertToComparisonOperator(part.getType()), value));
-			filter.setPropertyName(propertyName);
+			Filter.setNameFromProperty(filter, propertyName);
 		} else {
 			filter = new Filter(propertyName, convertToComparisonOperator(part.getType()), value);
 		}

@@ -41,7 +41,7 @@ public class User {
 
 	private Collection<Genre> interested;
 
-	@Relationship(type = "FRIEND_OF", direction = Relationship.UNDIRECTED) private Set<User> friends;
+	@Relationship(type = "FRIEND_OF", direction = Relationship.Direction.UNDIRECTED) private Set<User> friends;
 
 	public User() {}
 
