@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 import org.neo4j.ogm.cypher.query.Pagination;
 import org.neo4j.ogm.session.Session;
@@ -27,7 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.util.PagingAndSortingUtils;
-import org.springframework.data.repository.support.PageableExecutionUtils;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -103,6 +104,13 @@ public class SimpleNeo4jRepository<T, ID extends Serializable> implements Neo4jR
 	@Override
 	public void deleteById(ID id) {
 		findById(id).ifPresent(session::delete);
+	}
+
+	@Transactional
+	@Override
+	public void deleteAllById(Iterable<? extends ID> ids) {
+		StreamSupport.stream(ids.spliterator(), false)
+				.forEachOrdered(this::deleteById);
 	}
 
 	@Transactional

@@ -18,6 +18,7 @@ package org.springframework.data.neo4j.examples.movies;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.data.neo4j.test.GraphDatabaseServiceAssert.assertThat;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -298,6 +299,29 @@ public class MoviesIntegrationTests {
 
 		try (Result result = graphDatabaseService.execute("MATCH (n) RETURN n")) {
 			assertThat(result.hasNext()).isFalse();
+		}
+	}
+
+	@Test
+	public void shouldDeleteAllUsers() {
+
+		User u1 = userRepository.save(new User());
+		User u2 = userRepository.save(new User());
+		userRepository.save(new User());
+
+		try (Result result = graphDatabaseService.execute("MATCH (n) RETURN COUNT(n) AS cnt")) {
+			long cnt = (long) result.next().get("cnt");
+			assertThat(cnt).isEqualTo(3L);
+		}
+
+		List<Long> ids = new ArrayList<>();
+		ids.add(u1.getId());
+		ids.add(u2.getId());
+		userRepository.deleteAllById(ids);
+
+		try (Result result = graphDatabaseService.execute("MATCH (n) RETURN COUNT(n) AS cnt")) {
+			long cnt = (long) result.next().get("cnt");
+			assertThat(cnt).isEqualTo(1L);
 		}
 	}
 

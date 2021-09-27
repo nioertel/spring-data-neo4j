@@ -112,6 +112,12 @@ public class PagedQueryTests {
 			}
 
 			@Override
+			public Pageable withPage(int pageNumber) {
+				CustomPageRequest cpr = new CustomPageRequest(pageNumber);
+				return cpr;
+			}
+
+			@Override
 			public long getOffset() {
 				return 3L;
 			}

@@ -30,7 +30,7 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.neo4j.annotation.QueryResult;
 import org.springframework.data.neo4j.util.PagingAndSortingUtils;
-import org.springframework.data.repository.support.PageableExecutionUtils;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -94,7 +94,7 @@ public interface GraphQueryExecution {
 		public Object execute(Query query, Class<?> type) {
 			if (query.isFilterQuery()) {
 				Pagination pagination = query.getOptionalPagination(null, false);
-				SortOrder ogmSort = PagingAndSortingUtils.convert(Optional.ofNullable(accessor.getSort()).filter(Sort::isSorted).orElseGet(query::getOptionalSort));
+				SortOrder ogmSort = PagingAndSortingUtils.convert(Optional.of(accessor.getSort()).filter(Sort::isSorted).orElseGet(query::getOptionalSort));
 				return pagination == null ? session.loadAll(type, query.getFilters(), ogmSort, accessor.getDepth()) : session.loadAll(type, query.getFilters(),
 						ogmSort, pagination, accessor.getDepth());
 			} else {
