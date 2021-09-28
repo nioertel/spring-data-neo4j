@@ -28,8 +28,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.neo4j.harness.ServerControls;
-import org.neo4j.harness.TestServerBuilders;
+import org.neo4j.harness.Neo4j;
+import org.neo4j.harness.Neo4jBuilders;
 import org.neo4j.ogm.config.Configuration;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
@@ -54,7 +54,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 public class ProgrammaticRepositoryTests {
 
-	private static ServerControls serverControls;
+	private static Neo4j serverControls;
 	private static SessionFactory sessionFactory;
 	private static TransactionTemplate transactionTemplate;
 
@@ -63,7 +63,7 @@ public class ProgrammaticRepositoryTests {
 
 	@BeforeClass
 	public static void oneTimeSetUp() {
-		serverControls = TestServerBuilders.newInProcessBuilder().newServer();
+		serverControls = Neo4jBuilders.newInProcessBuilder().withDisabledServer().build();
 
 		Configuration configuration = new Configuration.Builder() //
 				.uri(serverControls.boltURI().toString()) //
@@ -111,7 +111,7 @@ public class ProgrammaticRepositoryTests {
 
 		Map<String, Object> params = new HashMap<>();
 		params.put("title", "PF");
-		assertThat(serverControls.graph()).containsNode("MATCH (n:Movie) WHERE n.title = $title RETURN n", params);
+		assertThat(serverControls.defaultDatabaseService()).containsNode("MATCH (n:Movie) WHERE n.title = $title RETURN n", params);
 
 		assertThat(StreamSupport.stream(movieRepository.findAll().spliterator(), false)
 				.count()).isEqualTo(1);

@@ -17,9 +17,10 @@ package org.springframework.data.neo4j.test;
 
 import java.util.Optional;
 
+import org.neo4j.dbms.api.DatabaseManagementService;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.harness.ServerControls;
-import org.neo4j.harness.TestServerBuilders;
+import org.neo4j.harness.Neo4j;
+import org.neo4j.harness.Neo4jBuilders;
 import org.neo4j.ogm.session.SessionFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
@@ -48,18 +49,20 @@ class Neo4jTestServerConfiguration {
 	static final String NEO4J_TEST_SERVER_BEAN_NAME = "neo4jTestServer";
 
 	@Bean(name = NEO4J_TEST_SERVER_BEAN_NAME)
-	ServerControls neo4jTestServer() {
-		return TestServerBuilders.newInProcessBuilder().newServer();
+	Neo4j neo4jTestServer() {
+		return Neo4jBuilders.newInProcessBuilder().withDisabledServer().build();
 	}
 
 	@Bean
-	GraphDatabaseService graphDatabaseService(ServerControls neo4jTestServer) {
-		return neo4jTestServer.graph();
+	GraphDatabaseService graphDatabaseService(Neo4j neo4j) {
+		return neo4j.defaultDatabaseService();
 	}
+
+	@Bean DatabaseManagementService databaseManagementService(Neo4j neo4j) { return neo4j.databaseManagementService(); };
 
 	@Bean
 	@Conditional(OnMissingOGMConfigurationCondition.class)
-	org.neo4j.ogm.config.Configuration neo4jOGMConfiguration(ServerControls neo4jTestServer) {
+	org.neo4j.ogm.config.Configuration neo4jOGMConfiguration(Neo4j neo4j) {
 
 		// @Value isn't used on purpose. Some tests interfere with the conversion services and
 		// it would be much more effort to use Springs system property integration and SpEL than
@@ -70,10 +73,10 @@ class Neo4jTestServerConfiguration {
 		String uri;
 		switch (integrationTestMode) {
 			case BOLT:
-				uri = neo4jTestServer.boltURI().toString();
+				uri = neo4j.boltURI().toString();
 				break;
 			case HTTP:
-				uri = neo4jTestServer.httpURI().toString();
+				uri = neo4j.httpURI().toString();
 				break;
 			case EMBEDDED:
 				uri = null; // This is on purpose, the configuration than uses embedded.

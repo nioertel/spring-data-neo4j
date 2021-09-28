@@ -15,17 +15,21 @@
  */
 package org.springframework.data.neo4j.integration.conversion;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.lang.annotation.ElementType;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.neo4j.graphdb.Result;
-import org.neo4j.harness.ServerControls;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.harness.Neo4j;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,9 +41,9 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.neo4j.conversion.MetaDataDrivenConversionService;
 import org.springframework.data.neo4j.conversion.gh2213.DescribeType;
 import org.springframework.data.neo4j.conversion.gh2213.Describes;
+import org.springframework.data.neo4j.conversion.gh2213.NodeA;
 import org.springframework.data.neo4j.conversion.gh2213.NodeB;
 import org.springframework.data.neo4j.conversion.gh2213.RepositoryUnderTest;
-import org.springframework.data.neo4j.conversion.gh2213.NodeA;
 import org.springframework.data.neo4j.integration.conversion.domain.JavaElement;
 import org.springframework.data.neo4j.integration.conversion.domain.MonetaryAmount;
 import org.springframework.data.neo4j.integration.conversion.domain.PensionPlan;
@@ -48,8 +52,6 @@ import org.springframework.data.neo4j.test.Neo4jIntegrationTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.support.TransactionTemplate;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * See DATAGRAPH-624
@@ -66,7 +68,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ContextConfiguration(classes = ConversionServiceTests.ConversionServicePersistenceContext.class)
 public class ConversionServiceTests {
 
-	@Autowired private ServerControls neo4jTestServer;
+	@Autowired private Neo4j neo4jTestServer;
 	@Autowired private PensionRepository pensionRepository;
 	@Autowired private JavaElementRepository javaElementRepository;
 	@Autowired private SiteMemberRepository siteMemberRepository;
@@ -84,7 +86,7 @@ public class ConversionServiceTests {
 
 	@Before
 	public void setUp() {
-		neo4jTestServer.graph().execute("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
+		neo4jTestServer.defaultDatabaseService().executeTransactionally("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
 	}
 
 	/**
@@ -108,9 +110,8 @@ public class ConversionServiceTests {
 
 	@Test
 	public void shouldConvertBase64StringOutOfGraphDatabaseBackIntoByteArray() {
-		Result rs = neo4jTestServer.graph()
-				.execute("CREATE (u:SiteMember {profilePictureData:'MTIzNDU2Nzg5'}) RETURN id(u) AS userId");
-		Long userId = (Long) rs.columnAs("userId").next();
+		Long userId = (Long) neo4jTestServer.defaultDatabaseService()
+				.executeTransactionally("CREATE (u:SiteMember {profilePictureData:'MTIzNDU2Nzg5'}) RETURN id(u) AS userId", Map.of(), r -> r.columnAs("userId").next());
 
 		byte[] expectedData = "123456789".getBytes();
 
@@ -134,12 +135,14 @@ public class ConversionServiceTests {
 			return pensionToSave1;
 		});
 
-		Result result = neo4jTestServer.graph().execute("MATCH (p:PensionPlan) RETURN p.fundValue AS fv");
-		assertThat(result.hasNext()).as("Nothing was saved").isTrue();
-		assertThat(String.valueOf(result.next().get("fv")))
-				.as("The amount wasn't converted and persisted correctly")
-				.isEqualTo("1647281");
-		result.close();
+		try (Transaction tx = neo4jTestServer.defaultDatabaseService().beginTx();
+				Result result = tx.execute("MATCH (p:PensionPlan) RETURN p.fundValue AS fv")) {
+			assertThat(result.hasNext()).as("Nothing was saved").isTrue();
+			assertThat(String.valueOf(result.next().get("fv")))
+					.as("The amount wasn't converted and persisted correctly")
+					.isEqualTo("1647281");
+			tx.commit();
+		}
 
 		PensionPlan reloadedPension = this.pensionRepository.findById(pensionToSave.getPensionPlanId()).get();
 		assertThat(reloadedPension.getFundValue())
@@ -158,12 +161,14 @@ public class ConversionServiceTests {
 
 		PensionPlan pension = new PensionPlan(new MonetaryAmount(20_000, 00), "Ashes Assets LLP");
 		this.pensionRepository.save(pension);
-		Result result = neo4jTestServer.graph().execute("MATCH (p:PensionPlan) RETURN p.fundValue AS fv");
-		assertThat(result.hasNext()).as("Nothing was saved").isTrue();
-		assertThat(String.valueOf(result.next().get("fv")))
-				.as("The amount wasn't converted and persisted correctly")
-				.isEqualTo("2000000");
-		result.close();
+		try (Transaction tx = neo4jTestServer.defaultDatabaseService().beginTx();
+				Result result = tx.execute("MATCH (p:PensionPlan) RETURN p.fundValue AS fv")) {
+			assertThat(result.hasNext()).as("Nothing was saved").isTrue();
+			assertThat(String.valueOf(result.next().get("fv")))
+					.as("The amount wasn't converted and persisted correctly")
+					.isEqualTo("2000000");
+			tx.commit();
+		}
 	}
 
 	/**
@@ -179,13 +184,14 @@ public class ConversionServiceTests {
 
 		this.javaElementRepository.save(method);
 
-		Result result = neo4jTestServer.graph().execute("MATCH (e:JavaElement) RETURN e.elementType AS type");
-		assertThat(result.hasNext()).as("Nothing was saved").isTrue();
-		assertThat(result.next().get("type"))
-				.as("The element type wasn't converted and persisted correctly")
-				.isEqualTo("METHOD");
-		result.close();
-
+		try (Transaction tx = neo4jTestServer.defaultDatabaseService().beginTx();
+				Result result = tx.execute("MATCH (e:JavaElement) RETURN e.elementType AS type")) {
+			assertThat(result.hasNext()).as("Nothing was saved").isTrue();
+			assertThat(result.next().get("type"))
+					.as("The element type wasn't converted and persisted correctly")
+					.isEqualTo("METHOD");
+			tx.commit();
+		}
 		JavaElement loadedObject = this.javaElementRepository.findAll().iterator().next();
 		assertThat(loadedObject.getElementType())
 				.as("The element type wasn't loaded and converted correctly")

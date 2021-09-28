@@ -22,7 +22,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.neo4j.harness.ServerControls;
+import org.neo4j.harness.Neo4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.AbstractPageRequest;
 import org.springframework.data.domain.Page;
@@ -55,7 +55,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @RunWith(SpringRunner.class)
 public class PagedQueryTests {
 
-	@Autowired private ServerControls neo4jTestServer;
+	@Autowired private Neo4j neo4jTestServer;
 
 	@Autowired private CinemaRepository cinemaRepository;
 
@@ -63,7 +63,7 @@ public class PagedQueryTests {
 
 	@Before
 	public void init() {
-		neo4jTestServer.graph().execute("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
+		executeUpdate("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
 	}
 
 	public void setup() {
@@ -78,7 +78,7 @@ public class PagedQueryTests {
 	}
 
 	private void executeUpdate(String cypher) {
-		neo4jTestServer.graph().execute(cypher);
+		neo4jTestServer.defaultDatabaseService().executeTransactionally(cypher);
 	}
 
 	@Test // DATAGRAPH-1332

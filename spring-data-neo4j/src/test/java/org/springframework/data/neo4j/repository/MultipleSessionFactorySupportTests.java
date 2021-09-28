@@ -15,13 +15,15 @@
  */
 package org.springframework.data.neo4j.repository;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.api.Assumptions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.junit.AfterClass;
@@ -33,9 +35,8 @@ import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.Statement;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Transaction;
-import org.neo4j.harness.ServerControls;
-import org.neo4j.harness.TestServerBuilders;
+import org.neo4j.harness.Neo4j;
+import org.neo4j.harness.Neo4jBuilders;
 import org.neo4j.ogm.session.Neo4jSession;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
@@ -84,9 +85,9 @@ public class MultipleSessionFactorySupportTests {
 
 	private static final boolean neo4jOgm324Plus = ReflectionUtils.findMethod(Neo4jSession.class, "determineLabelsOrTypeForLoading", Class.class) != null;
 
-	private static ServerControls instance1;
+	private static Neo4j instance1;
 
-	private static ServerControls instance2;
+	private static Neo4j instance2;
 
 	@Autowired @Qualifier(BEAN_NAME_FRIENDS_SESSION_FACTORY) private Session friendsSession;
 
@@ -99,8 +100,8 @@ public class MultipleSessionFactorySupportTests {
 	@BeforeClass
 	public static void initializeDatabase() {
 
-		instance1 = TestServerBuilders.newInProcessBuilder().newServer();
-		instance2 = TestServerBuilders.newInProcessBuilder().newServer();
+		instance1 = Neo4jBuilders.newInProcessBuilder().withDisabledServer().build();
+		instance2 = Neo4jBuilders.newInProcessBuilder().withDisabledServer().build();
 	}
 
 	@Test // DATAGRAPH-1094
@@ -138,10 +139,10 @@ public class MultipleSessionFactorySupportTests {
 		assertThat(this.friendsSession.loadAll(Person.class)).hasSize(2);
 		assertThat(this.restaurantsSession.loadAll(Diner.class)).hasSize(2);
 
-		assertThat(executeCountQuery(QUERY_COUNT_PERSON_NODES, instance1.graph())).isEqualTo(2L);
-		assertThat(executeCountQuery(QUERY_COUNT_PERSON_NODES, instance2.graph())).isEqualTo(0L);
-		assertThat(executeCountQuery(QUERY_COUNT_DINER_NODES, instance1.graph())).isEqualTo(0L);
-		assertThat(executeCountQuery(QUERY_COUNT_DINER_NODES, instance2.graph())).isEqualTo(2L);
+		assertThat(executeCountQuery(QUERY_COUNT_PERSON_NODES, instance1.defaultDatabaseService())).isEqualTo(2L);
+		assertThat(executeCountQuery(QUERY_COUNT_PERSON_NODES, instance2.defaultDatabaseService())).isEqualTo(0L);
+		assertThat(executeCountQuery(QUERY_COUNT_DINER_NODES, instance1.defaultDatabaseService())).isEqualTo(0L);
+		assertThat(executeCountQuery(QUERY_COUNT_DINER_NODES, instance2.defaultDatabaseService())).isEqualTo(2L);
 	}
 
 	@AfterClass
@@ -173,11 +174,7 @@ public class MultipleSessionFactorySupportTests {
 
 	private long executeCountQuery(String countQuery, GraphDatabaseService onInstance) {
 
-		try (Transaction tx = onInstance.beginTx()) {
-			long result = (long) onInstance.execute(countQuery).next().get("cnt");
-			tx.success();
-			return result;
-		}
+		return (long) onInstance.executeTransactionally(countQuery, Map.of(), r -> r.next().get("cnt"));
 	}
 
 	@Configuration

@@ -38,6 +38,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Result;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.ogm.cypher.ComparisonOperator;
 import org.neo4j.ogm.cypher.Filter;
 import org.neo4j.ogm.session.Session;
@@ -98,7 +99,7 @@ public class MoviesIntegrationTests {
 
 	@Before
 	public void setUp() {
-		graphDatabaseService.execute("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
+		graphDatabaseService.executeTransactionally("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
 	}
 
 	@Test
@@ -297,8 +298,9 @@ public class MoviesIntegrationTests {
 			}
 		});
 
-		try (Result result = graphDatabaseService.execute("MATCH (n) RETURN n")) {
+		try (Transaction tx = graphDatabaseService.beginTx(); Result result = tx.execute("MATCH (n) RETURN n")) {
 			assertThat(result.hasNext()).isFalse();
+			tx.commit();
 		}
 	}
 
@@ -309,9 +311,10 @@ public class MoviesIntegrationTests {
 		User u2 = userRepository.save(new User());
 		userRepository.save(new User());
 
-		try (Result result = graphDatabaseService.execute("MATCH (n) RETURN COUNT(n) AS cnt")) {
+		try (Transaction tx = graphDatabaseService.beginTx(); Result result = tx.execute("MATCH (n) RETURN COUNT(n) AS cnt")) {
 			long cnt = (long) result.next().get("cnt");
 			assertThat(cnt).isEqualTo(3L);
+			tx.commit();
 		}
 
 		List<Long> ids = new ArrayList<>();
@@ -319,9 +322,10 @@ public class MoviesIntegrationTests {
 		ids.add(u2.getId());
 		userRepository.deleteAllById(ids);
 
-		try (Result result = graphDatabaseService.execute("MATCH (n) RETURN COUNT(n) AS cnt")) {
+		try (Transaction tx = graphDatabaseService.beginTx(); Result result = tx.execute("MATCH (n) RETURN COUNT(n) AS cnt")) {
 			long cnt = (long) result.next().get("cnt");
 			assertThat(cnt).isEqualTo(1L);
+			tx.commit();
 		}
 	}
 
@@ -539,7 +543,7 @@ public class MoviesIntegrationTests {
 	@Test
 	public void shouldLoadOutgoingFriendsWhenUndirected() {
 
-		graphDatabaseService.execute("CREATE (m:User:Person {name:'Michal'})-[:FRIEND_OF]->(a:User {name:'Adam'})");
+		graphDatabaseService.executeTransactionally("CREATE (m:User:Person {name:'Michal'})-[:FRIEND_OF]->(a:User {name:'Adam'})");
 
 		User michal = ((Iterable<User>) findByProperty(User.class, "name", "Michal")).iterator().next();
 		assertThat(michal.getFriends().size()).isEqualTo(1);
@@ -555,7 +559,7 @@ public class MoviesIntegrationTests {
 	@Test
 	public void shouldLoadIncomingFriendsWhenUndirected() {
 
-		graphDatabaseService.execute("CREATE (m:User:Person {name:'Michal'})<-[:FRIEND_OF]-(a:User {name:'Adam'})");
+		graphDatabaseService.executeTransactionally("CREATE (m:User:Person {name:'Michal'})<-[:FRIEND_OF]-(a:User {name:'Adam'})");
 
 		User michal = ((Iterable<User>) findByProperty(User.class, "name", "Michal")).iterator().next();
 		assertThat(michal.getFriends().size()).isEqualTo(1);

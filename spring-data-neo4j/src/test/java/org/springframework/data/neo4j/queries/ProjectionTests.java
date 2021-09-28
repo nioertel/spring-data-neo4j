@@ -23,7 +23,7 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.harness.ServerControls;
+import org.neo4j.harness.Neo4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.neo4j.examples.movies.domain.CinemaAndBlockbuster;
@@ -48,11 +48,11 @@ public class ProjectionTests {
 	static class PrepareAndCleanDatabase implements TestExecutionListener {
 		public void beforeTestClass(TestContext testContext) {
 
-			GraphDatabaseService graphDatabaseService = testContext.getApplicationContext().getBean(ServerControls.class)
-					.graph();
+			GraphDatabaseService graphDatabaseService = testContext.getApplicationContext().getBean(Neo4j.class)
+					.defaultDatabaseService();
 
-			graphDatabaseService.execute("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
-			graphDatabaseService.execute("CREATE (p:Theatre {name:'Picturehouse', city:'London', capacity:5000}) "
+			graphDatabaseService.executeTransactionally("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
+			graphDatabaseService.executeTransactionally("CREATE (p:Theatre {name:'Picturehouse', city:'London', capacity:5000}) "
 					+ " CREATE (r:Theatre {name:'Ritzy', city:'London', capacity: 7500}) " + " CREATE (u:User {name:'Michal'}) "
 					+ " CREATE (u)-[:VISITED]->(r)  CREATE (u)-[:VISITED]->(p)" + " CREATE (m1:Movie {name:'San Andreas'}) "
 					+ " CREATE (m2:Movie {name:'Pitch Perfect 2'})" + " CREATE (p)-[:BLOCKBUSTER]->(m1)"
@@ -62,9 +62,9 @@ public class ProjectionTests {
 
 		@Override
 		public void afterTestClass(TestContext testContext) {
-			GraphDatabaseService graphDatabaseService = testContext.getApplicationContext().getBean(ServerControls.class)
-					.graph();
-			graphDatabaseService.execute("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
+			GraphDatabaseService graphDatabaseService = testContext.getApplicationContext().getBean(Neo4j.class)
+					.defaultDatabaseService();
+			graphDatabaseService.executeTransactionally("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
 		}
 	}
 

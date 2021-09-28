@@ -33,8 +33,8 @@ import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.SessionConfig;
 import org.neo4j.driver.internal.InternalBookmark;
-import org.neo4j.harness.ServerControls;
-import org.neo4j.harness.TestServerBuilders;
+import org.neo4j.harness.Neo4j;
+import org.neo4j.harness.Neo4jBuilders;
 import org.neo4j.ogm.drivers.bolt.driver.BoltDriver;
 import org.neo4j.ogm.session.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,12 +111,12 @@ public class BookmarkTransactionTests {
 	static class BookmarkConfiguration {
 
 		@Bean
-		ServerControls neo4jTestServer() {
-			return TestServerBuilders.newInProcessBuilder().newServer();
+		Neo4j neo4jTestServer() {
+			return Neo4jBuilders.newInProcessBuilder().withDisabledServer().build();
 		}
 
 		@Bean
-		public Driver nativeDriver(ServerControls neo4jTestServer) {
+		public Driver nativeDriver(Neo4j neo4jTestServer) {
 			return spy(GraphDatabase.driver(neo4jTestServer.boltURI(), AuthTokens.none()));
 		}
 

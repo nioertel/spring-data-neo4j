@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.harness.ServerControls;
+import org.neo4j.harness.Neo4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.neo4j.examples.movies.domain.Gender;
@@ -65,7 +65,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @RunWith(SpringRunner.class)
 public class QueryIntegrationTests {
 
-	@Autowired private ServerControls neo4jTestServer;
+	@Autowired private Neo4j neo4jTestServer;
 
 	@Autowired private UserRepository userRepository;
 
@@ -73,11 +73,11 @@ public class QueryIntegrationTests {
 
 	@Before
 	public void clearDatabase() {
-		neo4jTestServer.graph().execute("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
+		executeUpdate("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
 	}
 
 	private void executeUpdate(String cypher) {
-		neo4jTestServer.graph().execute(cypher);
+		neo4jTestServer.defaultDatabaseService().executeTransactionally(cypher);
 	}
 
 	@Test
@@ -794,23 +794,19 @@ public class QueryIntegrationTests {
 	@Test // DATAGRAPH-1310
 	public void enumsShouldBeConvertedOnSave() {
 
-		long newUserId = transactionTemplate.execute(new TransactionCallback<Long>() {
-
-			@Override
-			public Long doInTransaction(TransactionStatus transactionStatus) {
-				User abc = new User("Miriam");
-				abc.setGender(Gender.FEMALE);
-				return userRepository.save(abc).getId();
-			}
+		long newUserId = transactionTemplate.execute(transactionStatus -> {
+			User abc = new User("Miriam");
+			abc.setGender(Gender.FEMALE);
+			return userRepository.save(abc).getId();
 		});
 
-		GraphDatabaseService graph = neo4jTestServer.graph();
+		GraphDatabaseService graph = neo4jTestServer.defaultDatabaseService();
 		try (Transaction transaction = graph.beginTx()) {
 
-			final String gender = (String) graph.execute("MATCH (u) WHERE id(u) = $id RETURN u.gender AS gender",
+			final String gender = (String) transaction.execute("MATCH (u) WHERE id(u) = $id RETURN u.gender AS gender",
 					Collections.singletonMap("id", newUserId)).next().get("gender");
 			assertThat(gender).isEqualTo("FEMALE");
-			transaction.success();
+			transaction.commit();
 		}
 	}
 

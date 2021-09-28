@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.neo4j.harness.ServerControls;
+import org.neo4j.harness.Neo4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.neo4j.examples.movies.domain.Cinema;
@@ -43,13 +43,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 public class Java8SupportTests {
 
-	@Autowired private ServerControls neo4jTestServer;
+	@Autowired private Neo4j neo4jTestServer;
 
 	@Autowired private CinemaStreamingRepository cinemaRepository;
 
 	@Before
 	public void setup() {
-		neo4jTestServer.graph().execute("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
+		neo4jTestServer.defaultDatabaseService().executeTransactionally("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
 
 		String[] names = new String[] { "Picturehouse", "Regal", "Ritzy", "Metro", "Inox", "PVR", "Cineplex", "Landmark",
 				"Rainbow", "Movietime" };

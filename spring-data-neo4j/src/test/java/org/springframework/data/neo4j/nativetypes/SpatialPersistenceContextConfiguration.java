@@ -15,7 +15,7 @@
  */
 package org.springframework.data.neo4j.nativetypes;
 
-import org.neo4j.harness.ServerControls;
+import org.neo4j.harness.Neo4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -37,7 +37,7 @@ import org.springframework.data.neo4j.test.Neo4jIntegrationTest;
 class SpatialPersistenceContextConfiguration {
 
 	@Bean
-	org.neo4j.ogm.config.Configuration neo4jOGMConfiguration(ServerControls serverControls) {
+	org.neo4j.ogm.config.Configuration neo4jOGMConfiguration(Neo4j serverControls) {
 		return new org.neo4j.ogm.config.Configuration.Builder() //
 				.uri(serverControls.boltURI().toString()) //
 				.useNativeTypes() //

@@ -31,8 +31,9 @@ import org.neo4j.driver.GraphDatabase;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
-import org.neo4j.harness.ServerControls;
-import org.neo4j.harness.TestServerBuilders;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.harness.Neo4j;
+import org.neo4j.harness.Neo4jBuilders;
 import org.neo4j.ogm.drivers.bolt.driver.BoltDriver;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
@@ -63,17 +64,17 @@ public class Neo4jOgmEntityInstantiatorAdapterTests {
 
 	private static final Config driverConfig = Config.builder().withoutEncryption().build();
 
-	private static ServerControls serverControls;
+	private static Neo4j serverControls;
 	private static URI boltURI;
 
 	@BeforeClass
 	public static void initializeNeo4j() {
 
-		serverControls = TestServerBuilders.newInProcessBuilder()
+		serverControls = Neo4jBuilders.newInProcessBuilder().withDisabledServer()
 				.withProcedure(Neo4jOgmEntityInstantiatorAdapterTests.ListReturningThing.class)
 				.withFixture("CREATE (m:MyNode{name: 'All the', things: []})")
 				.withFixture("CREATE (m:CoercedNumericInCtor{name: 'Whatever', lfdnr: 4711})")
-				.newServer();
+				.build();
 		boltURI = serverControls.boltURI();
 	}
 
@@ -127,7 +128,10 @@ public class Neo4jOgmEntityInstantiatorAdapterTests {
 		public Stream<ListOfNodesResult> generateListOfNodes(@Name("empty") boolean empty) {
 			List<Node> result = new ArrayList<>();
 			if (!empty) {
-				db.findNodes(Label.label("MyNode")).forEachRemaining(result::add);
+				try (Transaction tx = db.beginTx()) {
+					tx.findNodes(Label.label("MyNode")).forEachRemaining(result::add);
+					tx.commit();
+				}
 			}
 			return Stream.of(new ListOfNodesResult(result));
 		}

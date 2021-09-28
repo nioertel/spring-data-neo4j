@@ -19,9 +19,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.neo4j.dbms.api.DatabaseManagementService;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.event.TransactionData;
-import org.neo4j.graphdb.event.TransactionEventHandler;
+import org.neo4j.graphdb.event.TransactionEventListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.examples.movies.domain.User;
 import org.springframework.data.neo4j.examples.movies.repo.UserRepository;
@@ -38,28 +40,28 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 public class TransactionIntegrationTests {
 
-	@Autowired private GraphDatabaseService graphDatabaseService;
+	@Autowired private DatabaseManagementService databaseManagementService;
 
 	@Autowired private UserRepository userRepository;
 
 	@Autowired private UserService userService;
 
-	private TransactionEventHandler.Adapter<Object> handler;
+	private TransactionEventListenerAdapter<Object> handler;
 
 	@Before
 	public void populateDatabase() {
-		handler = new TransactionEventHandler.Adapter<Object>() {
+		handler = new TransactionEventListenerAdapter<Object>() {
 			@Override
-			public Object beforeCommit(TransactionData data) throws Exception {
+			public Object beforeCommit(TransactionData data, Transaction transaction, GraphDatabaseService databaseService) throws Exception {
 				throw new TransactionInterceptException("Deliberate testing exception");
 			}
 		};
-		graphDatabaseService.registerTransactionEventHandler(handler);
+		databaseManagementService.registerTransactionEventListener("neo4j", handler);
 	}
 
 	@After
 	public void cleanupHandler() {
-		graphDatabaseService.unregisterTransactionEventHandler(handler);
+		databaseManagementService.unregisterTransactionEventListener("neo4j", handler);
 	}
 
 	@Test(expected = Exception.class)

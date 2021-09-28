@@ -23,8 +23,8 @@ import javax.enterprise.inject.se.SeContainerInitializer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.neo4j.harness.ServerControls;
-import org.neo4j.harness.TestServerBuilders;
+import org.neo4j.harness.Neo4j;
+import org.neo4j.harness.Neo4jBuilders;
 import org.springframework.data.neo4j.examples.friends.domain.Person;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,13 +37,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class CdiExtensionTests {
 
-	static ServerControls neo4jTestServer;
+	static Neo4j neo4jTestServer;
 	static SeContainer container;
 
 	@BeforeClass
 	public static void setUp() {
 
-		neo4jTestServer = TestServerBuilders.newInProcessBuilder().newServer();
+		neo4jTestServer = Neo4jBuilders.newInProcessBuilder().withDisabledServer().build();
 
 		// Prevent the Jersey extension to interact with the InitialContext
 		System.setProperty("com.sun.jersey.server.impl.cdi.lookupExtensionInBeanManager", "true");

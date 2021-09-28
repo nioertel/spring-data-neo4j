@@ -51,7 +51,7 @@ public class FriendTests {
 
 	@Before
 	public void cleanUpDatabase() {
-		graphDatabaseService.execute("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
+		graphDatabaseService.executeTransactionally("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
 	}
 
 	@Test // DATAGRAPH-703

@@ -59,7 +59,7 @@ public class TransactionRollbackTests {
 
 	@Before
 	public void clearDatabase() {
-		graphDatabaseService.execute("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
+		graphDatabaseService.executeTransactionally("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
 	}
 
 	@AfterTransaction
@@ -87,8 +87,8 @@ public class TransactionRollbackTests {
 		}
 		assertThat(TestTransaction.isActive()).isFalse();
 		try (Transaction tx = graphDatabaseService.beginTx()) {
-			assertThat(graphDatabaseService.getAllNodes().iterator().hasNext()).isFalse();
-			tx.success();
+			assertThat(tx.getAllNodes().iterator().hasNext()).isFalse();
+			tx.commit();
 		}
 	}
 
@@ -108,8 +108,8 @@ public class TransactionRollbackTests {
 			return null;
 		});
 		try (Transaction tx = graphDatabaseService.beginTx()) {
-			assertThat(graphDatabaseService.getAllNodes().stream().count()).isEqualTo(2);
-			tx.success();
+			assertThat(tx.getAllNodes().stream().count()).isEqualTo(2);
+			tx.commit();
 		}
 	}
 }

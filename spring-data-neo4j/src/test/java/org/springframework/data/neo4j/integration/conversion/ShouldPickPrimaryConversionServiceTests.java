@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Result;
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,7 +50,7 @@ public class ShouldPickPrimaryConversionServiceTests {
 
 	@Before
 	public void setUp() {
-		graphDatabaseService.execute("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
+		graphDatabaseService.executeTransactionally("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
 	}
 
 	@Test
@@ -57,12 +58,15 @@ public class ShouldPickPrimaryConversionServiceTests {
 		PensionPlan pension = new PensionPlan(new MonetaryAmount(16472, 81), "Tightfist Asset Management Ltd");
 		pension = this.pensionRepository.save(pension);
 
-		Result result = graphDatabaseService.execute("MATCH (p:PensionPlan) RETURN p.fundValue AS fv");
-		assertThat(result.hasNext()).as("Nothing was saved").isTrue();
-		assertThat(String.valueOf(result.next().get("fv")))
-				.as("The amount wasn't converted and persisted correctly")
-				.isEqualTo("42");
-		result.close();
+		try(Transaction tx = graphDatabaseService.beginTx()) {
+			Result result = tx.execute("MATCH (p:PensionPlan) RETURN p.fundValue AS fv");
+			assertThat(result.hasNext()).as("Nothing was saved").isTrue();
+			assertThat(String.valueOf(result.next().get("fv")))
+					.as("The amount wasn't converted and persisted correctly")
+					.isEqualTo("42");
+			result.close();
+			tx.commit();
+		}
 
 		PensionPlan reloadedPension = this.pensionRepository.findById(pension.getPensionPlanId()).get();
 		assertThat(reloadedPension.getFundValue())

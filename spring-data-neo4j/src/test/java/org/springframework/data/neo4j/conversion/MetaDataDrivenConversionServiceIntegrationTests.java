@@ -78,16 +78,18 @@ public class MetaDataDrivenConversionServiceIntegrationTests {
 		entity.setTheDouble(42.0);
 		entityRepository.save(entity);
 
-		Result result = graphDatabaseService
-				.execute("MATCH (e:EntityWithConvertedAttributes) RETURN e.convertedClass, e.doubles, e.theDouble");
+		try (Transaction tx = graphDatabaseService.beginTx();
+				Result result = tx.execute(
+						"MATCH (e:EntityWithConvertedAttributes) RETURN e.convertedClass, e.doubles, e.theDouble")) {
 
-		assertThat(result.hasNext()).isTrue();
-		Map<String, Object> row = result.next();
-		assertThat(row) //
-				.containsEntry("e.convertedClass", "n/a") //
-				.containsEntry("e.doubles", "21.0,21.0") //
-				.containsEntry("e.theDouble", "that has been a double");
-
+			assertThat(result.hasNext()).isTrue();
+			Map<String, Object> row = result.next();
+			assertThat(row) //
+					.containsEntry("e.convertedClass", "n/a") //
+					.containsEntry("e.doubles", "21.0,21.0") //
+					.containsEntry("e.theDouble", "that has been a double");
+			tx.commit();
+		}
 	}
 
 	@Test // DATAGRAPH-1156
@@ -108,11 +110,11 @@ public class MetaDataDrivenConversionServiceIntegrationTests {
 
 		List<UUID> ids = new ArrayList<>();
 		try (Transaction tx = graphDatabaseService.beginTx()) {
-			graphDatabaseService.execute("MATCH (n) DETACH DELETE n");
-			Result r = graphDatabaseService.execute(
+			tx.execute("MATCH (n) DETACH DELETE n").close();
+			Result r = tx.execute(
 					"UNWIND range(1,5) AS i WITH i CREATE (p:Person {id: randomUUID(), name: 'Person' + i, email: 'person' + i + '@test.com'}) RETURN p.id AS id");
 			r.map(m -> (String) m.get("id")).map(UUID::fromString).forEachRemaining(ids::add);
-			tx.success();
+			tx.commit();
 		}
 		return ids;
 	}

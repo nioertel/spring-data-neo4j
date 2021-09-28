@@ -55,7 +55,7 @@ public class TransactionalRepositoryTests {
 	@Before
 	public void setUp() {
 
-		graphDatabaseService.execute("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
+		graphDatabaseService.executeTransactionally("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
 		transactionManager.resetCount();
 	}
 

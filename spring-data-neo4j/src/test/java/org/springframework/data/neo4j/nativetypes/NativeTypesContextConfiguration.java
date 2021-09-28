@@ -15,7 +15,7 @@
  */
 package org.springframework.data.neo4j.nativetypes;
 
-import org.neo4j.harness.ServerControls;
+import org.neo4j.harness.Neo4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.neo4j.test.Neo4jIntegrationTest;
@@ -31,7 +31,7 @@ import org.springframework.data.neo4j.test.Neo4jIntegrationTest;
 class NativeTypesContextConfiguration {
 
 	@Bean
-	org.neo4j.ogm.config.Configuration neo4jOGMConfiguration(ServerControls neo4jTestServer) {
+	org.neo4j.ogm.config.Configuration neo4jOGMConfiguration(Neo4j neo4jTestServer) {
 		return new org.neo4j.ogm.config.Configuration.Builder() //
 				.uri(neo4jTestServer.boltURI().toString()) //
 				.useNativeTypes() //

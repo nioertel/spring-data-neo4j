@@ -68,11 +68,11 @@ public class QueryResultIntegrationTests {
 	public void prepareTestDa() {
 
 		try (Transaction tx = graphDatabaseService.beginTx()) {
-			graphDatabaseService.execute("MATCH (n) DETACH DELETE n");
-			graphDatabaseService.execute("unwind range(1,10) as x with x create (n:ThingEntity {name: 'Thing ' + x}) return n");
-			graphDatabaseService.execute("MERGE (p:Person {name:'Billy'})<-[:OWNED_BY]-(d:Dog {name: 'Ralph', breed: 'Muppet'})<-[:HOUSES]-(k:Kennel)");
-			graphDatabaseService.execute("MERGE (p:Person {name:'Sally'})<-[:LIVES_WITH]-(c:Cat {name: 'Mittens', food: 'Birds'})<-[:HOUSES]-(k:Kennel)");
-			tx.success();
+			tx.execute("MATCH (n) DETACH DELETE n");
+			tx.execute("unwind range(1,10) as x with x create (n:ThingEntity {name: 'Thing ' + x}) return n");
+			tx.execute("MERGE (p:Person {name:'Billy'})<-[:OWNED_BY]-(d:Dog {name: 'Ralph', breed: 'Muppet'})<-[:HOUSES]-(k:Kennel)");
+			tx.execute("MERGE (p:Person {name:'Sally'})<-[:LIVES_WITH]-(c:Cat {name: 'Mittens', food: 'Birds'})<-[:HOUSES]-(k:Kennel)");
+			tx.commit();
 		}
 	}
 

@@ -46,14 +46,14 @@ public class GraphDatabaseServiceAssert extends AbstractAssert<GraphDatabaseServ
 		isNotNull();
 
 		NodeAssert nodeAssert;
-		try (Transaction tx = actual.beginTx(); Result result = actual.execute(matchStatement, params)) {
+		try (Transaction tx = actual.beginTx(); Result result = tx.execute(matchStatement, params)) {
 
 			if (!result.hasNext()) {
-				tx.failure();
+				tx.rollback();
 				failWithMessage("Graph should contain node matched by <%s> didn't.", matchStatement);
 			}
 
-			tx.success();
+			tx.commit();
 			nodeAssert = new NodeAssert((Node) result.next().get("n"));
 		}
 		return nodeAssert;

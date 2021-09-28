@@ -17,7 +17,7 @@ package org.springframework.data.neo4j.test;
 
 import static org.springframework.data.neo4j.test.Neo4jTestServerConfiguration.*;
 
-import org.neo4j.harness.ServerControls;
+import org.neo4j.harness.Neo4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.TestContext;
 import org.springframework.test.context.support.AbstractTestExecutionListener;
@@ -37,7 +37,7 @@ class CloseServerControlsAfterTestClassTestExecutionListener extends AbstractTes
 
 		ApplicationContext applicationContext = testContext.getApplicationContext();
 		if (applicationContext.containsBean(NEO4J_TEST_SERVER_BEAN_NAME)) {
-			((ServerControls) applicationContext.getBean(NEO4J_TEST_SERVER_BEAN_NAME)).close();
+			((Neo4j) applicationContext.getBean(NEO4J_TEST_SERVER_BEAN_NAME)).close();
 			testContext.markApplicationContextDirty(null);
 		}
 	}

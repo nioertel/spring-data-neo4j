@@ -31,7 +31,7 @@ import java.util.concurrent.Executors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.neo4j.harness.ServerControls;
+import org.neo4j.harness.Neo4j;
 import org.neo4j.ogm.session.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -64,7 +64,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @RunWith(SpringRunner.class)
 public class DerivedQueryTests {
 
-	@Autowired private ServerControls neo4jTestServer;
+	@Autowired private Neo4j neo4jTestServer;
 
 	@Autowired private Session session;
 
@@ -78,11 +78,11 @@ public class DerivedQueryTests {
 
 	@Before
 	public void clearDatabase() {
-		neo4jTestServer.graph().execute("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
+		executeUpdate("MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE r, n");
 	}
 
 	private void executeUpdate(String cypher) {
-		neo4jTestServer.graph().execute(cypher);
+		neo4jTestServer.defaultDatabaseService().executeTransactionally(cypher);
 	}
 
 	@Test

@@ -20,7 +20,7 @@ import java.time.Year;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.neo4j.harness.ServerControls;
+import org.neo4j.harness.Neo4j;
 import org.neo4j.ogm.config.AutoIndexMode;
 import org.neo4j.ogm.exception.core.InvalidPropertyFieldException;
 
@@ -66,7 +66,7 @@ public class Neo4jPersistenceExceptionTranslatorIntegrationTests {
 
 		// Turn off Autoindex Manager to avoid eager entity scanning
 		@Bean
-		org.neo4j.ogm.config.Configuration neo4jOGMConfiguration(ServerControls neo4jTestServer) {
+		org.neo4j.ogm.config.Configuration neo4jOGMConfiguration(Neo4j neo4jTestServer) {
 			return new org.neo4j.ogm.config.Configuration.Builder() //
 					.uri(neo4jTestServer.boltURI().toString()) //
 					.autoIndex(AutoIndexMode.NONE.getName()) //
