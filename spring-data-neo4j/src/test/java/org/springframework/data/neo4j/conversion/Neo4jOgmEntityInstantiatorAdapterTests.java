@@ -122,16 +122,13 @@ public class Neo4jOgmEntityInstantiatorAdapterTests {
 	public static class ListReturningThing {
 
 		@Context
-		public GraphDatabaseService db;
+		public Transaction tx;
 
 		@Procedure("test.generateListOfNodes")
 		public Stream<ListOfNodesResult> generateListOfNodes(@Name("empty") boolean empty) {
 			List<Node> result = new ArrayList<>();
 			if (!empty) {
-				try (Transaction tx = db.beginTx()) {
-					tx.findNodes(Label.label("MyNode")).forEachRemaining(result::add);
-					tx.commit();
-				}
+				tx.findNodes(Label.label("MyNode")).forEachRemaining(result::add);
 			}
 			return Stream.of(new ListOfNodesResult(result));
 		}
