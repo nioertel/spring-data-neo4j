@@ -22,6 +22,7 @@ import java.util.Map;
 import org.neo4j.ogm.metadata.reflect.EntityAccessManager;
 import org.neo4j.ogm.session.Utils;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.EntityInstantiator;
@@ -54,12 +55,17 @@ public class Neo4jOgmEntityInstantiatorAdapter implements org.neo4j.ogm.session.
 
 	@SuppressWarnings({ "unchecked" })
 	@Override
-	public <T> T createInstance(Class<T> clazz, Map<String, Object> propertyValues) {
+	public <T> T createInstance(Class<T> type, Map<String, Object> propertyValues) {
 
-		Neo4jPersistentEntity<T> persistentEntity = (Neo4jPersistentEntity<T>) context.getRequiredPersistentEntity(clazz);
+		Neo4jPersistentEntity<T> persistentEntity = (Neo4jPersistentEntity<T>) context.getRequiredPersistentEntity(type);
 		EntityInstantiator sdnInstantiator = context.getInstantiatorFor(persistentEntity);
 
 		return sdnInstantiator.createInstance(persistentEntity, getParameterProvider(propertyValues, conversionService));
+	}
+
+	@Override
+	public <T> T createInstanceWithConstructorArgs(Class<T> type, Map<String, Object> propertyValues) {
+		return createInstance(type, propertyValues);
 	}
 
 	private ParameterValueProvider<Neo4jPersistentProperty> getParameterProvider(Map<String, Object> propertyValues,
@@ -81,9 +87,9 @@ public class Neo4jOgmEntityInstantiatorAdapter implements org.neo4j.ogm.session.
 		@SuppressWarnings({ "unchecked" })
 		@Override
 		@Nullable
-		public Object getParameterValue(PreferredConstructor.Parameter parameter) {
+		public <T> T getParameterValue(Parameter<T, Neo4jPersistentProperty> parameter) {
 
-			Object value = extractParameterValue(parameter);
+			T value = extractParameterValue(parameter);
 			if (value == null || conversionService == null) {
 				return value;
 			} else {
@@ -91,7 +97,7 @@ public class Neo4jOgmEntityInstantiatorAdapter implements org.neo4j.ogm.session.
 			}
 		}
 
-		private Object extractParameterValue(PreferredConstructor.Parameter parameter) {
+		private <T> T extractParameterValue(Parameter<T, Neo4jPersistentProperty> parameter) {
 
 			Object value = propertyValues.get(parameter.getName());
 
@@ -102,7 +108,7 @@ public class Neo4jOgmEntityInstantiatorAdapter implements org.neo4j.ogm.session.
 			if (value != null && value.getClass().isArray()) {
 				value = Arrays.asList((Object[]) value);
 			}
-			TypeInformation typeInformation = parameter.getType();
+			TypeInformation<T> typeInformation = parameter.getType();
 			if (typeInformation.isCollectionLike()) {
 				Class<?> collectionType = typeInformation.getType();
 				Class<?> elementType = typeInformation.getComponentType().getType();
@@ -111,7 +117,7 @@ public class Neo4jOgmEntityInstantiatorAdapter implements org.neo4j.ogm.session.
 						: EntityAccessManager.merge(collectionType, value, Collections.EMPTY_LIST, elementType);
 			}
 
-			return Utils.coerceTypes(parameter.getType().getType(), value);
+			return (T) Utils.coerceTypes(parameter.getType().getType(), value);
 		}
 	}
 }

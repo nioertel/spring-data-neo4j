@@ -287,9 +287,11 @@ public class PersistenceConstructorsTests {
 
 	@Repository
 	public interface PersonRepository extends Neo4jRepository<Person, String> {
-		@Query("MATCH (n:Person {name: $name}) \n" + "WITH n, size((n) - [:IS_FRIEND] -> ()) AS numberOfFriends\n"
-				+ "MATCH (n) - [:IS_FRIEND] -> (m:Person) - [:IS_FRIEND] -> (n)\n"
-				+ "RETURN n.name AS name, numberOfFriends,  collect(m) AS mutualFriends")
+		@Query("""
+				MATCH (n:Person {name: $name})
+				WITH n, count {(n) - [:IS_FRIEND] -> ()} AS numberOfFriends
+				MATCH (n) - [:IS_FRIEND] -> (m:Person) - [:IS_FRIEND] -> (n)
+				RETURN n.name AS name, numberOfFriends,  collect(m) AS mutualFriends""")
 		List<PersonProjection> findPersonWithMutualFriendsByName(@Param("name") String name);
 	}
 

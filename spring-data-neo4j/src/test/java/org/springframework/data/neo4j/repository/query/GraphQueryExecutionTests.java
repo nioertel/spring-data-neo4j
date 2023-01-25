@@ -15,7 +15,6 @@
  */
 package org.springframework.data.neo4j.repository.query;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.anyMap;
 import static org.mockito.Mockito.anyString;
