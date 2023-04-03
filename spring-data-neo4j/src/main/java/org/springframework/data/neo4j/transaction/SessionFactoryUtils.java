@@ -18,7 +18,6 @@ package org.springframework.data.neo4j.transaction;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import org.neo4j.ogm.autoindex.MissingIndexException;
 import org.neo4j.ogm.exception.ConnectionException;
 import org.neo4j.ogm.exception.CypherException;
 import org.neo4j.ogm.exception.ResultProcessingException;
@@ -140,9 +139,6 @@ public class SessionFactoryUtils {
 			return new InvalidDataAccessApiUsageException(ex.getMessage(), ex);
 		}
 		if (ex instanceof TransactionManagerException) {
-			return new InvalidDataAccessApiUsageException(ex.getMessage(), ex);
-		}
-		if (ex instanceof MissingIndexException) {
 			return new InvalidDataAccessApiUsageException(ex.getMessage(), ex);
 		}
 

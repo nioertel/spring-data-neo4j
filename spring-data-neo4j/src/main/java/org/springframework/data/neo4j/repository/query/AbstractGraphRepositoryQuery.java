@@ -99,7 +99,7 @@ public abstract class AbstractGraphRepositoryQuery implements RepositoryQuery {
 	 * @return true if that's the case
 	 */
 	private boolean returnsOgmSpecificType() {
-		Class returnType = queryMethod.getMethod().getReturnType();
+		Class<?> returnType = queryMethod.getMethod().getReturnType();
 		return QueryStatistics.class.isAssignableFrom(returnType) || Result.class.isAssignableFrom(returnType);
 	}
 

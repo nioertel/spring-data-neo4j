@@ -18,11 +18,9 @@ package org.springframework.data.neo4j.repository.query;
 import org.neo4j.ogm.cypher.query.SortOrder;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.neo4j.annotation.Depth;
 import org.springframework.data.neo4j.util.PagingAndSortingUtils;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
-import org.springframework.lang.Nullable;
 
 /**
  * Custom {@link ParametersParameterAccessor} to allow access to the {@link Depth} parameter.

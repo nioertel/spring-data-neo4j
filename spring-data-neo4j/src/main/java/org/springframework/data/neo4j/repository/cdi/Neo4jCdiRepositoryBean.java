@@ -19,14 +19,14 @@ import java.lang.annotation.Annotation;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-
 import org.neo4j.ogm.session.Session;
 import org.springframework.data.neo4j.repository.support.Neo4jRepositoryFactory;
 import org.springframework.data.repository.cdi.CdiRepositoryBean;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
+
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 /**
  * {@link org.springframework.data.repository.cdi.CdiRepositoryBean} to create Neo4j repository instances via CDI.

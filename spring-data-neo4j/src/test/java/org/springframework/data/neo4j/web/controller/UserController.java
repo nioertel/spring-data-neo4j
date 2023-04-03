@@ -20,8 +20,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import javax.servlet.http.HttpSession;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.web.domain.User;
 import org.springframework.data.neo4j.web.service.UserService;
@@ -30,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import jakarta.servlet.http.HttpSession;
 
 /**
  * @author Michal Bachman

@@ -23,8 +23,6 @@ import java.util.Optional;
 
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.RelationshipEntity;
-import org.springframework.beans.factory.annotation.Autowire;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.AutowireCandidateQualifier;
@@ -42,7 +40,6 @@ import org.springframework.data.repository.config.AnnotationRepositoryConfigurat
 import org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport;
 import org.springframework.data.repository.config.RepositoryConfigurationSource;
 import org.springframework.data.repository.config.XmlRepositoryConfigurationSource;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -114,7 +111,6 @@ public class Neo4jRepositoryConfigurationExtension extends RepositoryConfigurati
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getIdentifyingAnnotations()
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
 		return Arrays.asList(NodeEntity.class, RelationshipEntity.class);
 	}

@@ -19,7 +19,6 @@ import java.lang.reflect.Method;
 
 import org.springframework.aop.support.StaticMethodMatcherPointcut;
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.neo4j.annotation.UseBookmark;
 
 /**

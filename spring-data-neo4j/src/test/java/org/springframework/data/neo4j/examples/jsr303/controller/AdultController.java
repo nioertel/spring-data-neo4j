@@ -15,9 +15,6 @@
  */
 package org.springframework.data.neo4j.examples.jsr303.controller;
 
-import javax.validation.Valid;
-import javax.validation.ValidationException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.examples.jsr303.domain.Adult;
 import org.springframework.data.neo4j.examples.jsr303.service.AdultService;
@@ -30,6 +27,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import jakarta.validation.Valid;
+import jakarta.validation.ValidationException;
 
 /**
  * @author Vince Bickers

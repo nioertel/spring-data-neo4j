@@ -15,17 +15,11 @@
  */
 package org.springframework.data.neo4j.repository.config;
 
-import javax.annotation.PostConstruct;
-
 import org.neo4j.ogm.metadata.MetaData;
 import org.neo4j.ogm.session.SessionFactory;
 import org.neo4j.ogm.typeconversion.ConversionCallback;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.core.Ordered;
-import org.springframework.core.PriorityOrdered;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.neo4j.conversion.MetaDataDrivenConversionService;
 import org.springframework.data.neo4j.conversion.Neo4jOgmEntityInstantiatorAdapter;

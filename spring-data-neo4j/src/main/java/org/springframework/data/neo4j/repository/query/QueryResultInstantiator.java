@@ -53,4 +53,9 @@ class QueryResultInstantiator implements EntityInstantiator {
 	public <T> T createInstance(Class<T> clazz, Map<String, Object> propertyValues) {
 		return this.delegate.createInstance(clazz, propertyValues);
 	}
+
+	@Override
+	public <T> T createInstanceWithConstructorArgs(Class<T> clazz, Map<String, Object> propertyValues) {
+		return this.delegate.createInstanceWithConstructorArgs(clazz, propertyValues);
+	}
 }

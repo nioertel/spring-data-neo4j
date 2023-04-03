@@ -16,7 +16,8 @@
 package org.springframework.data.neo4j.repository.cdi;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -24,13 +25,13 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.ProcessBean;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.ogm.session.Session;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.ProcessBean;
 
 /**
  * @author Mark Angrish

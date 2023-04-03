@@ -28,6 +28,8 @@ import org.springframework.aop.support.AbstractBeanFactoryPointcutAdvisor;
  */
 public class BeanFactoryBookmarkOperationAdvisor extends AbstractBeanFactoryPointcutAdvisor {
 
+	private static final long serialVersionUID = 8673268482714238079L;
+
 	@Override
 	public Pointcut getPointcut() {
 		return new BookmarkOperationPointcut();

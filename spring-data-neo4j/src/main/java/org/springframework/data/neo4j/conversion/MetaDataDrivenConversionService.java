@@ -22,7 +22,6 @@ import org.neo4j.ogm.metadata.FieldInfo;
 import org.neo4j.ogm.metadata.MetaData;
 import org.neo4j.ogm.support.ClassUtils;
 import org.neo4j.ogm.typeconversion.AttributeConverter;
-import org.neo4j.ogm.typeconversion.EnumStringConverter;
 import org.neo4j.ogm.typeconversion.ProxyAttributeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +93,7 @@ public class MetaDataDrivenConversionService extends GenericConversionService {
 		}
 	}
 
-	static EntityToGraphTypeMapping getEntityToGraphTypeMapping(Class<?> type, AttributeConverter attributeConverter) {
+	static EntityToGraphTypeMapping getEntityToGraphTypeMapping(Class<?> type, AttributeConverter<?, ?> attributeConverter) {
 
 		ResolvableType resolvableType = ResolvableType.forClass(AttributeConverter.class,
 				attributeConverter.getClass());

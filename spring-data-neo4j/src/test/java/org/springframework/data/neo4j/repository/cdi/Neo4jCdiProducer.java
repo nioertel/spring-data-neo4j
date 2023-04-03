@@ -15,14 +15,15 @@
  */
 package org.springframework.data.neo4j.repository.cdi;
 
-import javax.enterprise.inject.Disposes;
-import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
 
 import org.neo4j.ogm.config.Configuration;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
 import org.springframework.data.neo4j.examples.friends.domain.Person;
+
+import jakarta.enterprise.inject.Disposes;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
 
 /**
  * Simple component exposing a {@link org.neo4j.ogm.session.Session} as CDI bean. See DATAGRAPH-879.

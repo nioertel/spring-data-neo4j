@@ -25,6 +25,7 @@ import java.util.Collection;
  */
 public class BookmarkInfo implements Serializable {
 
+	private static final long serialVersionUID = 3954022861725429078L;
 	private boolean useBookmark;
 	private Collection<String> bookmarks;
 

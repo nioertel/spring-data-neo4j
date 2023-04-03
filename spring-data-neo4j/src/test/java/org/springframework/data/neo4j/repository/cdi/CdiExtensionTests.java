@@ -15,10 +15,9 @@
  */
 package org.springframework.data.neo4j.repository.cdi;
 
-import java.util.Optional;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.enterprise.inject.se.SeContainer;
-import javax.enterprise.inject.se.SeContainerInitializer;
+import java.util.Optional;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -27,7 +26,8 @@ import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;
 import org.springframework.data.neo4j.examples.friends.domain.Person;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import jakarta.enterprise.inject.se.SeContainer;
+import jakarta.enterprise.inject.se.SeContainerInitializer;
 
 /**
  * Integration tests for {@link org.springframework.data.neo4j.repository.cdi.Neo4jCdiRepositoryExtension}.

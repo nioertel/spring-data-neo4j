@@ -34,7 +34,7 @@ import org.springframework.data.neo4j.annotation.QueryResult;
 class CustomResultConverter implements Converter<Object, Object> {
 
 	private final MetaData metaData;
-	private final Class returnedType;
+	private final Class<?> returnedType;
 
 	private final QueryResultInstantiator entityInstantiator;
 

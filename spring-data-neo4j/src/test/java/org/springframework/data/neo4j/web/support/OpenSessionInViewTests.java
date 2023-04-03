@@ -16,18 +16,16 @@
 package org.springframework.data.neo4j.web.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.servlet.AsyncEvent;
-import javax.servlet.AsyncListener;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 
 import org.junit.After;
 import org.junit.Before;
@@ -49,6 +47,13 @@ import org.springframework.web.context.request.async.StandardServletAsyncWebRequ
 import org.springframework.web.context.request.async.WebAsyncManager;
 import org.springframework.web.context.request.async.WebAsyncUtils;
 import org.springframework.web.context.support.StaticWebApplicationContext;
+
+import jakarta.servlet.AsyncEvent;
+import jakarta.servlet.AsyncListener;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 
 /**
  * @author Mark Angrish
