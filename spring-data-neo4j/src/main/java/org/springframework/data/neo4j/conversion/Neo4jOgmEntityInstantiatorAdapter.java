@@ -71,6 +71,11 @@ public class Neo4jOgmEntityInstantiatorAdapter implements org.neo4j.ogm.session.
 		return sdnInstantiator.createInstance(persistentEntity, getParameterProvider(propertyValues, conversionService));
 	}
 
+	@Override
+	public <T> T createInstanceWithConstructorArgs(Class<T> type, Map<String, Object> propertyValues) {
+		return createInstance(type, propertyValues);
+	}
+
 	private ParameterValueProvider<Neo4jPersistentProperty> getParameterProvider(Map<String, Object> propertyValues,
 			ConversionService conversionService) {
 		return new Neo4jPropertyValueProvider(propertyValues, conversionService);
@@ -87,21 +92,19 @@ public class Neo4jOgmEntityInstantiatorAdapter implements org.neo4j.ogm.session.
 			this.propertyValues = propertyValues;
 		}
 
-		@SuppressWarnings({ "unchecked" })
 		@Override
 		@Nullable
-		public<T> T getParameterValue(Parameter<T, Neo4jPersistentProperty> parameter) {
-			Object value = extractParameterValue(parameter);
+		public <T> T getParameterValue(Parameter<T, Neo4jPersistentProperty> parameter) {
+			T value = extractParameterValue(parameter);
 			if (value == null || conversionService == null) {
-				return (T)value;
+				return value;
 			} else {
 				return conversionService.convert(value, parameter.getType().getType());
 			}
 		}
 
 		@SuppressWarnings("unchecked")
-		private<T> T extractParameterValue(Parameter<T, Neo4jPersistentProperty> parameter) {
-
+		private <T> T extractParameterValue(Parameter<T, Neo4jPersistentProperty> parameter) {
 			Object value = propertyValues.get(parameter.getName());
 
 			// This recreates the behaviour of
@@ -120,7 +123,7 @@ public class Neo4jOgmEntityInstantiatorAdapter implements org.neo4j.ogm.session.
 						: EntityAccessManager.merge(collectionType, value, Collections.EMPTY_LIST, elementType);
 			}
 
-			return (T)Utils.coerceTypes(parameter.getType().getType(), value);
+			return (T) Utils.coerceTypes(parameter.getType().getType(), value);
 		}
 	}
 

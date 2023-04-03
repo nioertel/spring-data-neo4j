@@ -153,7 +153,7 @@ class DistanceComparisonBuilder extends FilterBuilder {
 				String longitudeProperty = nodeIdentifier + ".longitude";
 
 				return String.format(
-						"distance(coalesce(point({latitude: %s, longitude: %s}), %s), point({latitude:$lat, longitude:$lon})) "
+						"point.distance(coalesce(point({latitude: %s, longitude: %s}), %s), point({latitude:$lat, longitude:$lon})) "
 								+ "%s $distance ",
 						latitudeProperty, longitudeProperty, nodeIdentifier + "." + propertyName(),
 						ComparisonOperator.LESS_THAN.getValue());

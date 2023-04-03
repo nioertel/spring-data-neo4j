@@ -207,7 +207,7 @@ Depending on the `Range` definition `n.score >= min AND n.score \<= max` or
 
 |`Near`
 |`findByLocationNear(Distance distance, Point point)`
-|`distance( point(n),point({latitude:lat, longitude:lon}) ) < distance`
+|`point.distance( point(n),point({latitude:lat, longitude:lon}) ) < distance`
 
 |`Regex`
 |`findByNameRegex(String regex)`

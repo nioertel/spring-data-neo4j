@@ -1,19 +1,16 @@
 = Spring Data Neo4j
 
-WARNING: This is an unofficial fork of https://github.com/spring-projects/spring-data-neo4j[Spring Data Neo4j 5.3.x].
+WARNING: This is an #*unofficial*# fork of https://github.com/spring-projects/spring-data-neo4j[Spring Data Neo4j 5.3.x].
          It has not been released anywhere so far and there exists no concrete plans of doing so.
 
 The fork has no additional functionality but is updated in two dimensions:
 
-* It uses the latest Spring Data Commons (2.6.0 as of writing) and fixes breaking changes with it
-* It uses the yet to be released Neo4j-OGM 4.0 main branch.
+* It uses the latest Spring Data Commons (2.7.7 as of writing) and fixes breaking changes with it
+* It uses the latest Neo4j-OGM 4.0.1 and thus is compatible with Neo4j 5.x
+* However, Java 17 is required due to the requirements of the latest Neo4j-Java-Driver underpinning Neo4j-OGM 4 (ask the maintainers (oh wait))
 
 If you just want to use Neo4j-OGM and SDN5 against Neo4j 4.x over Bolt you can still use the official 5.3.x release.
-For now this repo and especially 5.4.x branch is just a prove of concept demonstrating the possibility of a release under new coordinates.
-
-A possible release would allow to keep on using SDN+OGM in newer Spring Boot applications (in the 2.6 range) without workarounds
-as well as the possibility of Neo4j 4.x embedded brought up via OGM (which we *strongly* discourage, there are much better
-ways to bring up an embedded instance in a Spring application than via the mapping layer while the mapping layer still can connect against).
+For now this repo and especially 5.4.x branch is just a proof of concept demonstrating the possibility of a release under new coordinates.
 
 == License
 
